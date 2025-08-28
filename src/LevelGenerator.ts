@@ -65,11 +65,16 @@ export class LevelGenerator {
             new Platform(startX, this.GROUND_Y, 300, 20), // Стартовая платформа
         ];
 
+        // Добавляем одного летающего монстра на старте для демонстрации
+        const flyingMonsters: FlyingMonster[] = [
+            new FlyingMonster(startX + 150, this.GROUND_Y - 100)
+        ];
+
         return {
             platforms,
             memes: [],
             trolls: [],
-            flyingMonsters: [],
+            flyingMonsters,
             startX,
             endX: startX + this.SEGMENT_WIDTH,
             difficulty: 0
@@ -116,8 +121,9 @@ export class LevelGenerator {
                 ));
             }
 
-            // Добавляем летающих монстров с возрастающей вероятностью
-            if (this.random() < difficulty * 0.3) {
+            // Добавляем летающих монстров (начинаем с небольшой вероятности)
+            const flyingChance = Math.max(0.15, difficulty * 0.3); // Минимум 15% вероятности
+            if (this.random() < flyingChance) {
                 const flyingY = currentY - 60 - this.random() * 80; // Летают выше платформ
                 flyingMonsters.push(new FlyingMonster(
                     platform.x + platform.width / 2,

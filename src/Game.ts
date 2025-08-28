@@ -29,6 +29,7 @@ export class Game {
     private level: number = 1;
     private gameState: 'menu' | 'playing' | 'gameOver' | 'victory' = 'menu';
     private levelCompleted: boolean = false; // Флаг для предотвращения повторного завершения уровня
+    private lastHitTime: number = 0; // Защита от повторных попаданий
     
     private cameraX: number = 0;
     private cameraY: number = 0;
@@ -111,7 +112,10 @@ export class Game {
         ];
         this.memes = [new Meme(275, 450), new Meme(525, 350)];
         this.trolls = [new Troll(600, 345)];
-        this.flyingMonsters = [new FlyingMonster(400, 250)]; // Добавляем одного летающего монстра
+        this.flyingMonsters = [
+            new FlyingMonster(200, 350), // Ранний летающий монстр
+            new FlyingMonster(500, 250)  // Поздний летающий монстр
+        ];
         this.finish = new Finish(1000, 320);
         this.levelWidth = 1200;
         
@@ -123,6 +127,32 @@ export class Game {
         this.gameState = 'playing';
         this.levelCompleted = false; // Сбрасываем флаг
         this.updateUI();
+    }
+
+    private canTakeDamage(): boolean {
+        const currentTime = Date.now();
+        return currentTime - this.lastHitTime > 1000; // 1 секунда защиты
+    }
+
+    private takeDamage(source: string): void {
+        this.lastHitTime = Date.now();
+        this.lives--;
+        this.audioManager.playSound('hit');
+        
+        // Разные цвета частиц для разных врагов
+        const particleColor = source === 'летающий монстр' ? '#9C27B0' : '#FF0000';
+        this.particleSystem.createParticles(this.player.x, this.player.y, particleColor);
+        
+        this.updateUI();
+        console.log(`Игрок получил урон от: ${source}`);
+        
+        if (this.lives <= 0) {
+            this.gameOver();
+        } else {
+            // Отбрасываем игрока назад
+            this.player.x = 100;
+            this.player.y = 500;
+        }
     }
 
     public resetToNewLevel(): void {
@@ -167,36 +197,16 @@ export class Game {
         // Обновление троллей
         this.trolls.forEach((troll) => {
             troll.update(this.platforms);
-            if (this.checkCollision(this.player, troll)) {
-                this.lives--;
-                this.audioManager.playSound('hit');
-                this.particleSystem.createParticles(this.player.x, this.player.y, '#FF0000');
-                this.updateUI();
-                
-                if (this.lives <= 0) {
-                    this.gameOver();
-                } else {
-                    this.player.x = 100;
-                    this.player.y = 500;
-                }
+            if (this.checkCollision(this.player, troll) && this.canTakeDamage()) {
+                this.takeDamage('тролль');
             }
         });
 
         // Обновление летающих монстров
         this.flyingMonsters.forEach((flyingMonster) => {
             flyingMonster.update();
-            if (flyingMonster.checkCollision(this.player)) {
-                this.lives--;
-                this.audioManager.playSound('hit');
-                this.particleSystem.createParticles(this.player.x, this.player.y, '#9C27B0');
-                this.updateUI();
-                
-                if (this.lives <= 0) {
-                    this.gameOver();
-                } else {
-                    this.player.x = 100;
-                    this.player.y = 500;
-                }
+            if (this.checkCollision(this.player, flyingMonster) && this.canTakeDamage()) {
+                this.takeDamage('летающий монстр');
             }
         });
 

@@ -12,6 +12,7 @@ export class FlyingMonster {
     private patrolDistance: number = 200; // Дистанция патрулирования
     private startX: number; // Начальная позиция для патрулирования
 
+
     constructor(x: number, y: number) {
         this.x = x;
         this.y = y;
@@ -75,13 +76,5 @@ export class FlyingMonster {
         }
         
         ctx.restore();
-    }
-
-    // Проверка коллизии с игроком
-    public checkCollision(player: any): boolean {
-        return player.x < this.x + this.width &&
-               player.x + player.width > this.x &&
-               player.y < this.y + this.height &&
-               player.y + player.height > this.y;
     }
 }

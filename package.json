@@ -1,0 +1,16 @@
+{
+  "name": "pepe-game",
+  "version": "1.0.0",
+  "description": "Легендарная игра про Пепе",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "vite": "^4.0.0"
+  },
+  "dependencies": {}
+} 

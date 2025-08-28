@@ -113,8 +113,7 @@ export class Game {
         this.memes = [new Meme(275, 450), new Meme(525, 350)];
         this.trolls = [new Troll(600, 345)];
         this.flyingMonsters = [
-            new FlyingMonster(200, 350), // Ранний летающий монстр
-            new FlyingMonster(500, 250)  // Поздний летающий монстр
+            new FlyingMonster(500, 250)  // Летающий монстр в середине уровня
         ];
         this.finish = new Finish(1000, 320);
         this.levelWidth = 1200;

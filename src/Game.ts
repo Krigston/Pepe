@@ -29,7 +29,7 @@ export class Game {
     private level: number = 1;
     private gameState: 'menu' | 'playing' | 'gameOver' | 'victory' = 'menu';
     private levelCompleted: boolean = false; // Флаг для предотвращения повторного завершения уровня
-    private lastHitTime: number = 0; // Защита от повторных попаданий
+    private invulnerabilityTime: number = 0; // Время неуязвимости после получения урона
     
     private cameraX: number = 0;
     private cameraY: number = 0;
@@ -83,6 +83,7 @@ export class Game {
             this.lives = 3;
             this.gameState = 'playing';
             this.levelCompleted = false; // Сбрасываем флаг завершения уровня
+            this.invulnerabilityTime = 0; // Сбрасываем неуязвимость
             
             this.updateUI();
             this.audioManager.playBackgroundMusic(); // Возобновляем музыку
@@ -139,13 +140,12 @@ export class Game {
     }
 
     private canTakeDamage(): boolean {
-        const currentTime = Date.now();
-        return currentTime - this.lastHitTime > 1000; // 1 секунда защиты
+        return this.invulnerabilityTime <= 0;
     }
 
     private takeDamage(source: string): void {
-        this.lastHitTime = Date.now();
         this.lives--;
+        this.invulnerabilityTime = 120; // 2 секунды неуязвимости при 60 FPS
         this.audioManager.playSound('hit');
         
         // Разные цвета частиц для разных врагов
@@ -153,14 +153,15 @@ export class Game {
         this.particleSystem.createParticles(this.player.x, this.player.y, particleColor);
         
         this.updateUI();
-        console.log(`Игрок получил урон от: ${source}`);
+        console.log(`Игрок получил урон от: ${source}, неуязвимость: ${this.invulnerabilityTime} кадров`);
         
         if (this.lives <= 0) {
             this.gameOver();
         } else {
-            // Отбрасываем игрока назад
+            // Отбрасываем игрока назад НЕМЕДЛЕННО
             this.player.x = 100;
             this.player.y = 500;
+            this.cameraX = 0; // Сбрасываем камеру тоже
         }
     }
 
@@ -179,6 +180,11 @@ export class Game {
 
     public update(): void {
         if (this.gameState !== 'playing') return;
+
+        // Обновляем таймер неуязвимости
+        if (this.invulnerabilityTime > 0) {
+            this.invulnerabilityTime--;
+        }
 
         this.player.update(this.inputManager, this.platforms);
         this.updateCamera();
@@ -267,7 +273,7 @@ export class Game {
         this.flyingMonsters.forEach(flyingMonster => flyingMonster.render(this.ctx, this.cameraX));
         this.finish.update();
         this.finish.render(this.ctx);
-        this.player.render(this.ctx);
+        this.player.render(this.ctx, this.invulnerabilityTime > 0);
         this.particleSystem.render(this.ctx);
 
         // Восстанавливаем контекст

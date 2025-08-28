@@ -118,8 +118,14 @@ export class Player {
                this.y + this.height > platform.y;
     }
 
-    public render(ctx: CanvasRenderingContext2D): void {
+    public render(ctx: CanvasRenderingContext2D, isInvulnerable: boolean = false): void {
         ctx.save();
+        
+        // Эффект мигания при неуязвимости
+        if (isInvulnerable) {
+            const alpha = Math.sin(Date.now() * 0.02) * 0.3 + 0.7; // Мигание от 0.4 до 1.0
+            ctx.globalAlpha = alpha;
+        }
         
         // Рендер Пепе
         this.drawPepe(ctx);

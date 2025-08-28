@@ -47,6 +47,11 @@ export class FlyingMonster {
         
         ctx.save();
         
+        // Отладочная информация - рисуем хитбокс
+        ctx.strokeStyle = '#FF00FF';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(screenX, this.y, this.width, this.height);
+        
         // Основное тело монстра (летучая мышь/птица)
         ctx.fillStyle = '#4A0E4E'; // Темно-фиолетовый
         ctx.fillRect(screenX, this.y, this.width, this.height);

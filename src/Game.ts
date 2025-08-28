@@ -100,11 +100,31 @@ export class Game {
             // Дополнительная информация о летающих монстрах
             if (this.flyingMonsters.length > 0) {
                 console.log('Летающие монстры размещены в позициях:', 
-                    this.flyingMonsters.map(fm => ({ x: Math.round(fm.x), y: Math.round(fm.y) }))
+                    this.flyingMonsters.map((fm, i) => ({ 
+                        index: i, 
+                        x: Math.round(fm.x), 
+                        y: Math.round(fm.y),
+                        width: fm.width,
+                        height: fm.height 
+                    }))
                 );
+                
+                // Проверяем на дублированные позиции
+                const positions = this.flyingMonsters.map(fm => `${Math.round(fm.x)},${Math.round(fm.y)}`);
+                const uniquePositions = [...new Set(positions)];
+                if (positions.length !== uniquePositions.length) {
+                    console.warn('⚠️ НАЙДЕНЫ ДУБЛИРОВАННЫЕ ЛЕТАЮЩИЕ МОНСТРЫ!', positions);
+                }
             } else {
                 console.warn('⚠️ На уровне', this.level, 'не создано ни одного летающего монстра!');
             }
+            
+            // Информация о всех врагах
+            console.log('Всего врагов на уровне:', {
+                trolls: this.trolls.length,
+                flyingMonsters: this.flyingMonsters.length,
+                total: this.trolls.length + this.flyingMonsters.length
+            });
         } catch (error) {
             console.error('Ошибка при генерации уровня:', error);
             // Fallback на простой уровень
@@ -210,18 +230,36 @@ export class Game {
         });
 
         // Обновление троллей
-        this.trolls.forEach((troll) => {
+        this.trolls.forEach((troll, index) => {
             troll.update(this.platforms);
-            if (this.checkCollision(this.player, troll) && this.canTakeDamage()) {
-                this.takeDamage('тролль');
+            const trollCollision = this.checkCollision(this.player, troll);
+            if (trollCollision) {
+                console.log(`🔴 Коллизия с троллем #${index}:`, {
+                    playerPos: { x: Math.round(this.player.x), y: Math.round(this.player.y) },
+                    trollPos: { x: Math.round(troll.x), y: Math.round(troll.y) },
+                    canTakeDamage: this.canTakeDamage(),
+                    invulnerabilityTime: this.invulnerabilityTime
+                });
+                if (this.canTakeDamage()) {
+                    this.takeDamage('тролль');
+                }
             }
         });
 
         // Обновление летающих монстров
-        this.flyingMonsters.forEach((flyingMonster) => {
+        this.flyingMonsters.forEach((flyingMonster, index) => {
             flyingMonster.update();
-            if (this.checkCollision(this.player, flyingMonster) && this.canTakeDamage()) {
-                this.takeDamage('летающий монстр');
+            const flyingCollision = this.checkCollision(this.player, flyingMonster);
+            if (flyingCollision) {
+                console.log(`🦇 Коллизия с летающим монстром #${index}:`, {
+                    playerPos: { x: Math.round(this.player.x), y: Math.round(this.player.y) },
+                    monsterPos: { x: Math.round(flyingMonster.x), y: Math.round(flyingMonster.y) },
+                    canTakeDamage: this.canTakeDamage(),
+                    invulnerabilityTime: this.invulnerabilityTime
+                });
+                if (this.canTakeDamage()) {
+                    this.takeDamage('летающий монстр');
+                }
             }
         });
 
@@ -349,14 +387,31 @@ export class Game {
                obj1.y < obj2.y + obj2.height &&
                obj1.y + obj1.height > obj2.y;
         
-        // Отладка для финиша (временно отключена)
-        // if (obj2 === this.finish) {
-        //     console.log('Проверка коллизии с финишем:', {
-        //         player: { x: obj1.x, y: obj1.y, width: obj1.width, height: obj1.height },
-        //         finish: { x: obj2.x, y: obj2.y, width: obj2.width, height: obj2.height },
-        //         collision: collision
-        //     });
-        // }
+        // Детальная отладка для летающих монстров
+        if (collision && this.flyingMonsters.includes(obj2)) {
+            console.log('🔍 ДЕТАЛИ КОЛЛИЗИИ с летающим монстром:', {
+                player: { 
+                    x: Math.round(obj1.x), 
+                    y: Math.round(obj1.y), 
+                    w: obj1.width, 
+                    h: obj1.height,
+                    right: Math.round(obj1.x + obj1.width),
+                    bottom: Math.round(obj1.y + obj1.height)
+                },
+                monster: { 
+                    x: Math.round(obj2.x), 
+                    y: Math.round(obj2.y), 
+                    w: obj2.width, 
+                    h: obj2.height,
+                    right: Math.round(obj2.x + obj2.width),
+                    bottom: Math.round(obj2.y + obj2.height)
+                },
+                overlap: {
+                    horizontal: Math.min(obj1.x + obj1.width, obj2.x + obj2.width) - Math.max(obj1.x, obj2.x),
+                    vertical: Math.min(obj1.y + obj1.height, obj2.y + obj2.height) - Math.max(obj1.y, obj2.y)
+                }
+            });
+        }
         
         return collision;
     }

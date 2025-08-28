@@ -130,6 +130,11 @@ export class Player {
         // Рендер Пепе
         this.drawPepe(ctx);
         
+        // Отладочная информация - рисуем хитбокс игрока
+        ctx.strokeStyle = '#00FF00';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(this.x, this.y, this.width, this.height);
+        
         ctx.restore();
     }
 

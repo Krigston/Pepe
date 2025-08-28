@@ -26,6 +26,7 @@ export class Game {
     private lives: number = 3;
     private level: number = 1;
     private gameState: 'menu' | 'playing' | 'gameOver' | 'victory' = 'menu';
+    private levelCompleted: boolean = false; // Флаг для предотвращения повторного завершения уровня
     
     private cameraX: number = 0;
     private cameraY: number = 0;
@@ -77,6 +78,7 @@ export class Game {
             // this.score = 0; // Сохраняем счет между уровнями
             this.lives = 3;
             this.gameState = 'playing';
+            this.levelCompleted = false; // Сбрасываем флаг завершения уровня
             
             this.updateUI();
             this.audioManager.playBackgroundMusic(); // Возобновляем музыку
@@ -114,6 +116,7 @@ export class Game {
         this.score = 0;
         this.lives = 3;
         this.gameState = 'playing';
+        this.levelCompleted = false; // Сбрасываем флаг
         this.updateUI();
     }
 
@@ -122,6 +125,7 @@ export class Game {
         this.level = 1;
         this.score = 0;
         this.lives = 3;
+        this.levelCompleted = false; // Сбрасываем флаг
         this.generateRandomLevel();
     }
 
@@ -173,9 +177,10 @@ export class Game {
             }
         });
 
-        // Проверка финиша
-        if (this.checkCollision(this.player, this.finish)) {
+        // Проверка финиша (только если уровень еще не завершен)
+        if (this.checkCollision(this.player, this.finish) && !this.levelCompleted) {
             console.log('Пепе достиг финиша! Победа!');
+            this.levelCompleted = true; // Помечаем уровень как завершенный
             this.victory();
         }
 

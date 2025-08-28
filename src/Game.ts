@@ -59,25 +59,70 @@ export class Game {
     }
 
     public generateRandomLevel(): void {
-        const generatedLevel = this.levelGenerator.generateLevel(8); // 8 сегментов
+        try {
+            const generatedLevel = this.levelGenerator.generateLevel(5); // 5 сегментов для стабильности
+            
+            this.platforms = generatedLevel.platforms;
+            this.memes = generatedLevel.memes;
+            this.trolls = generatedLevel.trolls;
+            this.finish = generatedLevel.finish;
+            this.levelWidth = generatedLevel.width;
+            
+            // Сбрасываем позицию игрока
+            this.player.x = 100;
+            this.player.y = 500;
+            this.cameraX = 0;
+            
+            // Сбрасываем игровые параметры (но НЕ level - он увеличивается при победе)
+            // this.score = 0; // Сохраняем счет между уровнями
+            this.lives = 3;
+            this.gameState = 'playing';
+            
+            this.updateUI();
+            this.audioManager.playBackgroundMusic(); // Возобновляем музыку
+            
+            console.log('Уровень успешно сгенерирован:', {
+                platforms: this.platforms.length,
+                memes: this.memes.length,
+                trolls: this.trolls.length,
+                width: this.levelWidth
+            });
+        } catch (error) {
+            console.error('Ошибка при генерации уровня:', error);
+            // Fallback на простой уровень
+            this.generateFallbackLevel();
+        }
+    }
+
+    private generateFallbackLevel(): void {
+        console.log('Используем резервный простой уровень');
+        this.platforms = [
+            new Platform(0, 580, 800, 20),
+            new Platform(200, 480, 150, 20),
+            new Platform(450, 380, 150, 20),
+            new Platform(700, 380, 150, 20),
+            new Platform(950, 380, 150, 20),
+        ];
+        this.memes = [new Meme(275, 450), new Meme(525, 350)];
+        this.trolls = [new Troll(600, 345)];
+        this.finish = new Finish(1000, 320);
+        this.levelWidth = 1200;
         
-        this.platforms = generatedLevel.platforms;
-        this.memes = generatedLevel.memes;
-        this.trolls = generatedLevel.trolls;
-        this.finish = generatedLevel.finish;
-        this.levelWidth = generatedLevel.width;
-        
-        // Сбрасываем позицию игрока
         this.player.x = 100;
         this.player.y = 500;
         this.cameraX = 0;
-        
-        // Сбрасываем игровые параметры
         this.score = 0;
         this.lives = 3;
         this.gameState = 'playing';
-        
         this.updateUI();
+    }
+
+    public resetToNewLevel(): void {
+        // Полный сброс для кнопки "Новый уровень"
+        this.level = 1;
+        this.score = 0;
+        this.lives = 3;
+        this.generateRandomLevel();
     }
 
 
@@ -280,9 +325,34 @@ export class Game {
 
     private victory(): void {
         console.log('Вызывается метод victory()');
-        this.gameState = 'victory';
+        this.level++; // Увеличиваем номер уровня
         this.audioManager.stopBackgroundMusic();
         this.audioManager.playSound('victory');
-        console.log('Состояние игры изменено на:', this.gameState);
+        
+        // Показываем сообщение о переходе на следующий уровень
+        this.showLevelComplete();
+        
+        // Автоматически генерируем следующий уровень через 2 секунды
+        setTimeout(() => {
+            this.generateRandomLevel();
+        }, 2000);
+        
+        console.log('Переход на уровень:', this.level);
+    }
+
+    private showLevelComplete(): void {
+        // Временно показываем сообщение в UI
+        const levelElement = document.getElementById('level');
+        if (levelElement) {
+            levelElement.textContent = `🎉 Уровень ${this.level - 1} пройден!`;
+            levelElement.style.color = '#FFD700';
+            levelElement.style.fontWeight = 'bold';
+            
+            setTimeout(() => {
+                levelElement.textContent = `Уровень: ${this.level}`;
+                levelElement.style.color = '';
+                levelElement.style.fontWeight = '';
+            }, 2000);
+        }
     }
 } 

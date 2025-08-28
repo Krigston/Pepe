@@ -82,8 +82,8 @@ export class LevelGenerator {
         let currentY = lastPlatform.y;
         let currentPlatformX = startX + 50;
 
-        // Генерируем 2-4 платформы в сегменте
-        const numPlatforms = 2 + Math.floor(this.random() * 3);
+        // Генерируем 2-3 платформы в сегменте (уменьшили для стабильности)
+        const numPlatforms = 2 + Math.floor(this.random() * 2);
 
         for (let i = 0; i < numPlatforms; i++) {
             const segmentType = this.selectSegmentType(difficulty);
@@ -113,7 +113,12 @@ export class LevelGenerator {
 
             // Обновляем позицию для следующей платформы (уменьшили вариацию с 50 до 30)
             currentPlatformX += this.JUMP_DISTANCE + this.random() * 30;
-            currentY = this.calculateNextY(currentY, segmentType, difficulty);
+            let newY = this.calculateNextY(currentY, segmentType, difficulty);
+            
+            // Ограничиваем высоту платформ для играбельности
+            const MIN_Y = 100; // Минимальная высота
+            const MAX_Y = 500; // Максимальная высота
+            currentY = Math.max(MIN_Y, Math.min(MAX_Y, newY));
         }
 
         return {
@@ -169,13 +174,13 @@ export class LevelGenerator {
     private calculateNextY(currentY: number, segmentType: string, _difficulty: number): number {
         switch (segmentType) {
             case 'easy':
-                return currentY + (-20 + this.random() * 40); // Небольшие изменения высоты
+                return currentY + (-30 + this.random() * 60); // Больше вариации высоты
             case 'jump':
-                return currentY - (30 + this.random() * 50); // Прыжок вверх
+                return currentY - (40 + this.random() * 80); // Более высокие прыжки
             case 'climb':
-                return currentY - (60 + this.random() * 40); // Высокий подъем
+                return currentY - (80 + this.random() * 60); // Еще более высокие подъемы
             case 'drop':
-                return Math.min(currentY + (40 + this.random() * 60), this.GROUND_Y - 50); // Падение вниз
+                return currentY + (60 + this.random() * 100); // Более глубокие спуски
             default:
                 return currentY;
         }
@@ -197,8 +202,7 @@ export class LevelGenerator {
             allTrolls.push(...segment.trolls);
         }
 
-        // Добавляем основание уровня
-        allPlatforms.push(new Platform(0, this.GROUND_Y + 50, totalWidth, 50));
+        // Основание уровня убрано для более интересного геймплея
 
         // Создаем финиш на последней платформе
         const lastPlatform = this.getLastPlatform(segments[segments.length - 1]);
@@ -218,7 +222,12 @@ export class LevelGenerator {
 
     private ensurePlayability(platforms: Platform[], _memes: Meme[], _trolls: Troll[]): void {
         // Проверяем, что между каждой парой соседних платформ можно прыгнуть
-        for (let i = 0; i < platforms.length - 1; i++) {
+        // Добавляем защиту от бесконечного цикла
+        let iterations = 0;
+        const maxIterations = platforms.length * 2; // Максимум итераций
+        
+        for (let i = 0; i < platforms.length - 1 && iterations < maxIterations; i++) {
+            iterations++;
             const current = platforms[i];
             const next = platforms[i + 1];
 
@@ -228,17 +237,19 @@ export class LevelGenerator {
             const horizontalDistance = Math.abs(next.x - (current.x + current.width));
             const verticalDistance = Math.abs(next.y - current.y);
 
-            // Если прыжок слишком далеко или высоко, корректируем
-            if (horizontalDistance > this.JUMP_DISTANCE * 0.8) { // Сделали проверку еще строже
+            // Если прыжок слишком далеко, корректируем только один раз
+            if (horizontalDistance > this.JUMP_DISTANCE * 0.9) { 
                 // Добавляем промежуточную платформу
-                const midX = current.x + current.width + this.JUMP_DISTANCE * 0.6; // Уменьшили расстояние
-                const midY = current.y + (next.y - current.y) / 2;
+                const midX = current.x + current.width + this.JUMP_DISTANCE * 0.7;
+                const midY = current.y + Math.min((next.y - current.y) / 2, 40); // Ограничиваем изменение высоты
                 platforms.splice(i + 1, 0, new Platform(midX, midY, 100, 20));
+                // После добавления платформы увеличиваем i, чтобы не проверять ее снова
+                i++;
             }
 
             if (verticalDistance > this.JUMP_HEIGHT && next.y < current.y) {
                 // Понижаем слишком высокую платформу
-                next.y = current.y - this.JUMP_HEIGHT + 20;
+                next.y = current.y - this.JUMP_HEIGHT + 30;
             }
         }
     }
@@ -252,6 +263,10 @@ export class LevelGenerator {
 
     private random(): number {
         this.seed = (this.seed * 9301 + 49297) % 233280;
+        // Защита от нулевого seed
+        if (this.seed === 0) {
+            this.seed = 1;
+        }
         return this.seed / 233280;
     }
 }

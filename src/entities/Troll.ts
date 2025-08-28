@@ -10,7 +10,7 @@ export class Troll {
     private gravity: number = 0.5;
     private direction: number = 1; // 1 = вправо, -1 = влево
     private animationTime: number = 0;
-    private isOnGround: boolean = false;
+
 
     constructor(x: number, y: number) {
         this.x = x;
@@ -35,15 +35,12 @@ export class Troll {
     }
 
     private handlePlatformCollisions(platforms: Platform[]): void {
-        this.isOnGround = false;
-        
         for (const platform of platforms) {
             if (this.checkCollision(platform)) {
                 // Коллизия снизу (падение на платформу)
                 if (this.vy > 0 && this.y < platform.y) {
                     this.y = platform.y - this.height;
                     this.vy = 0;
-                    this.isOnGround = true;
                 }
                 // Коллизия сверху (удар головой)
                 else if (this.vy < 0 && this.y > platform.y + platform.height) {

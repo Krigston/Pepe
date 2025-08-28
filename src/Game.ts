@@ -103,19 +103,24 @@ export class Game {
         this.inputManager.update();
         
         // Обновление мемов
-        this.memes.forEach((meme, index) => {
+        this.memes.forEach((meme) => {
             meme.update();
+        });
+        
+        // Проверка коллизий с мемами
+        this.memes = this.memes.filter((meme) => {
             if (this.checkCollision(this.player, meme)) {
-                this.memes.splice(index, 1);
                 this.score += 100;
                 this.audioManager.playSound('collect');
                 this.particleSystem.createParticles(meme.x, meme.y, '#FFD700');
                 this.updateUI();
+                return false; // удаляем мем
             }
+            return true; // оставляем мем
         });
 
         // Обновление троллей
-        this.trolls.forEach((troll, index) => {
+        this.trolls.forEach((troll) => {
             troll.update(this.platforms);
             if (this.checkCollision(this.player, troll)) {
                 this.lives--;

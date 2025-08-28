@@ -23,7 +23,7 @@ interface GeneratedLevel {
 export class LevelGenerator {
     private readonly SEGMENT_WIDTH = 400;
     private readonly JUMP_HEIGHT = 120; // Максимальная высота прыжка Пепе
-    private readonly JUMP_DISTANCE = 150; // Максимальная дистанция прыжка
+    private readonly JUMP_DISTANCE = 120; // Максимальная дистанция прыжка (уменьшено на 20%)
     private readonly MIN_PLATFORM_WIDTH = 80;
     private readonly MAX_PLATFORM_WIDTH = 200;
     private readonly GROUND_Y = 550;
@@ -111,8 +111,8 @@ export class LevelGenerator {
                 ));
             }
 
-            // Обновляем позицию для следующей платформы
-            currentPlatformX += this.JUMP_DISTANCE + this.random() * 50;
+            // Обновляем позицию для следующей платформы (уменьшили вариацию с 50 до 30)
+            currentPlatformX += this.JUMP_DISTANCE + this.random() * 30;
             currentY = this.calculateNextY(currentY, segmentType, difficulty);
         }
 
@@ -229,9 +229,9 @@ export class LevelGenerator {
             const verticalDistance = Math.abs(next.y - current.y);
 
             // Если прыжок слишком далеко или высоко, корректируем
-            if (horizontalDistance > this.JUMP_DISTANCE) {
+            if (horizontalDistance > this.JUMP_DISTANCE * 0.8) { // Сделали проверку еще строже
                 // Добавляем промежуточную платформу
-                const midX = current.x + current.width + this.JUMP_DISTANCE / 2;
+                const midX = current.x + current.width + this.JUMP_DISTANCE * 0.6; // Уменьшили расстояние
                 const midY = current.y + (next.y - current.y) / 2;
                 platforms.splice(i + 1, 0, new Platform(midX, midY, 100, 20));
             }

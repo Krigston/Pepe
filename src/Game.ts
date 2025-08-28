@@ -43,7 +43,7 @@ export class Game {
         
         this.player = new Player(100, 500);
         
-        this.generateRandomLevel();
+        this.generateRandomLevel(); // Включили обратно рандомную генерацию с улучшенными параметрами
     }
 
     public start(): void {
@@ -79,6 +79,8 @@ export class Game {
         
         this.updateUI();
     }
+
+
 
 
 

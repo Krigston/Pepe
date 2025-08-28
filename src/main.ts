@@ -34,11 +34,12 @@ class Main {
             });
         }
 
-        // Обработчик кнопки "Новый уровень"
+        // Обработчик кнопки "Новый уровень" - временно отключен для отладки
         const newLevelBtn = document.getElementById('newLevelBtn');
         if (newLevelBtn) {
             newLevelBtn.addEventListener('click', () => {
-                this.game.generateRandomLevel();
+                console.log('Кнопка "Новый уровень" временно отключена для отладки');
+                // this.game.generateRandomLevel();
             });
         }
     }

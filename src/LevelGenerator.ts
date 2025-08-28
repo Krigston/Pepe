@@ -2,11 +2,13 @@ import { Platform } from './entities/Platform';
 import { Meme } from './entities/Meme';
 import { Troll } from './entities/Troll';
 import { Finish } from './entities/Finish';
+import { FlyingMonster } from './entities/FlyingMonster';
 
 interface LevelSegment {
     platforms: Platform[];
     memes: Meme[];
     trolls: Troll[];
+    flyingMonsters: FlyingMonster[];
     startX: number;
     endX: number;
     difficulty: number;
@@ -16,6 +18,7 @@ interface GeneratedLevel {
     platforms: Platform[];
     memes: Meme[];
     trolls: Troll[];
+    flyingMonsters: FlyingMonster[];
     finish: Finish;
     width: number;
 }
@@ -66,6 +69,7 @@ export class LevelGenerator {
             platforms,
             memes: [],
             trolls: [],
+            flyingMonsters: [],
             startX,
             endX: startX + this.SEGMENT_WIDTH,
             difficulty: 0
@@ -76,6 +80,7 @@ export class LevelGenerator {
         const platforms: Platform[] = [];
         const memes: Meme[] = [];
         const trolls: Troll[] = [];
+        const flyingMonsters: FlyingMonster[] = [];
 
         // Получаем конечную платформу предыдущего сегмента
         const lastPlatform = this.getLastPlatform(previousSegment);
@@ -111,6 +116,15 @@ export class LevelGenerator {
                 ));
             }
 
+            // Добавляем летающих монстров с возрастающей вероятностью
+            if (this.random() < difficulty * 0.3) {
+                const flyingY = currentY - 60 - this.random() * 80; // Летают выше платформ
+                flyingMonsters.push(new FlyingMonster(
+                    platform.x + platform.width / 2,
+                    flyingY
+                ));
+            }
+
             // Обновляем позицию для следующей платформы (уменьшили вариацию с 50 до 30)
             currentPlatformX += this.JUMP_DISTANCE + this.random() * 30;
             let newY = this.calculateNextY(currentY, segmentType, difficulty);
@@ -125,6 +139,7 @@ export class LevelGenerator {
             platforms,
             memes,
             trolls,
+            flyingMonsters,
             startX,
             endX: startX + this.SEGMENT_WIDTH,
             difficulty
@@ -143,6 +158,7 @@ export class LevelGenerator {
             platforms,
             memes: [new Meme(startX + 100, lastPlatform.y - 30)], // Последний мем
             trolls: [],
+            flyingMonsters: [], // Финальный сегмент без летающих монстров
             startX,
             endX: startX + this.SEGMENT_WIDTH,
             difficulty: 0
@@ -194,12 +210,14 @@ export class LevelGenerator {
         const allPlatforms: Platform[] = [];
         const allMemes: Meme[] = [];
         const allTrolls: Troll[] = [];
+        const allFlyingMonsters: FlyingMonster[] = [];
 
         // Объединяем все сегменты
         for (const segment of segments) {
             allPlatforms.push(...segment.platforms);
             allMemes.push(...segment.memes);
             allTrolls.push(...segment.trolls);
+            allFlyingMonsters.push(...segment.flyingMonsters);
         }
 
         // Основание уровня убрано для более интересного геймплея
@@ -215,6 +233,7 @@ export class LevelGenerator {
             platforms: allPlatforms,
             memes: allMemes,
             trolls: allTrolls,
+            flyingMonsters: allFlyingMonsters,
             finish,
             width: totalWidth
         };

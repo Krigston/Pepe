@@ -3,6 +3,7 @@ import { Platform } from './entities/Platform';
 import { Meme } from './entities/Meme';
 import { Troll } from './entities/Troll';
 import { Finish } from './entities/Finish';
+import { FlyingMonster } from './entities/FlyingMonster';
 import { InputManager } from './InputManager';
 import { AudioManager } from './AudioManager';
 import { ParticleSystem } from './ParticleSystem';
@@ -20,6 +21,7 @@ export class Game {
     private platforms: Platform[] = [];
     private memes: Meme[] = [];
     private trolls: Troll[] = [];
+    private flyingMonsters: FlyingMonster[] = [];
     private finish!: Finish;
     
     private score: number = 0;
@@ -66,6 +68,7 @@ export class Game {
             this.platforms = generatedLevel.platforms;
             this.memes = generatedLevel.memes;
             this.trolls = generatedLevel.trolls;
+            this.flyingMonsters = generatedLevel.flyingMonsters;
             this.finish = generatedLevel.finish;
             this.levelWidth = generatedLevel.width;
             
@@ -87,6 +90,7 @@ export class Game {
                 platforms: this.platforms.length,
                 memes: this.memes.length,
                 trolls: this.trolls.length,
+                flyingMonsters: this.flyingMonsters.length,
                 width: this.levelWidth
             });
         } catch (error) {
@@ -107,6 +111,7 @@ export class Game {
         ];
         this.memes = [new Meme(275, 450), new Meme(525, 350)];
         this.trolls = [new Troll(600, 345)];
+        this.flyingMonsters = [new FlyingMonster(400, 250)]; // Добавляем одного летающего монстра
         this.finish = new Finish(1000, 320);
         this.levelWidth = 1200;
         
@@ -177,6 +182,24 @@ export class Game {
             }
         });
 
+        // Обновление летающих монстров
+        this.flyingMonsters.forEach((flyingMonster) => {
+            flyingMonster.update();
+            if (flyingMonster.checkCollision(this.player)) {
+                this.lives--;
+                this.audioManager.playSound('hit');
+                this.particleSystem.createParticles(this.player.x, this.player.y, '#9C27B0');
+                this.updateUI();
+                
+                if (this.lives <= 0) {
+                    this.gameOver();
+                } else {
+                    this.player.x = 100;
+                    this.player.y = 500;
+                }
+            }
+        });
+
         // Проверка финиша (только если уровень еще не завершен)
         if (this.checkCollision(this.player, this.finish) && !this.levelCompleted) {
             console.log('Пепе достиг финиша! Победа!');
@@ -222,6 +245,7 @@ export class Game {
         this.platforms.forEach(platform => platform.render(this.ctx));
         this.memes.forEach(meme => meme.render(this.ctx));
         this.trolls.forEach(troll => troll.render(this.ctx));
+        this.flyingMonsters.forEach(flyingMonster => flyingMonster.render(this.ctx, this.cameraX));
         this.finish.update();
         this.finish.render(this.ctx);
         this.player.render(this.ctx);

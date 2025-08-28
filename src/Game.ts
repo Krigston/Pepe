@@ -308,7 +308,7 @@ export class Game {
         this.platforms.forEach(platform => platform.render(this.ctx));
         this.memes.forEach(meme => meme.render(this.ctx));
         this.trolls.forEach(troll => troll.render(this.ctx));
-        this.flyingMonsters.forEach(flyingMonster => flyingMonster.render(this.ctx, this.cameraX));
+        this.flyingMonsters.forEach(flyingMonster => flyingMonster.render(this.ctx));
         this.finish.update();
         this.finish.render(this.ctx);
         this.player.render(this.ctx, this.invulnerabilityTime > 0);

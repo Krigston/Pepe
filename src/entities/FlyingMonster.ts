@@ -39,11 +39,11 @@ export class FlyingMonster {
         this.y = this.baseY + Math.sin(this.animationTime * 2) * this.amplitude;
     }
 
-    public render(ctx: CanvasRenderingContext2D, cameraX: number): void {
-        const screenX = this.x - cameraX;
+    public render(ctx: CanvasRenderingContext2D): void {
+        const screenX = this.x; // Камера уже применена в Game.ts
         
-        // Не рисуем если за пределами экрана
-        if (screenX < -50 || screenX > 850) return;
+        // Оптимизация рендеринга отключена пока мы отлаживаем
+        // if (screenX < -50 || screenX > 850) return;
         
         ctx.save();
         

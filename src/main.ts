@@ -33,6 +33,14 @@ class Main {
                 this.showInstructions();
             });
         }
+
+        // Обработчик кнопки "Новый уровень"
+        const newLevelBtn = document.getElementById('newLevelBtn');
+        if (newLevelBtn) {
+            newLevelBtn.addEventListener('click', () => {
+                this.game.generateRandomLevel();
+            });
+        }
     }
 
     private showInstructions(): void {

@@ -6,6 +6,7 @@ import { Finish } from './entities/Finish';
 import { InputManager } from './InputManager';
 import { AudioManager } from './AudioManager';
 import { ParticleSystem } from './ParticleSystem';
+import { LevelGenerator } from './LevelGenerator';
 
 export class Game {
     private canvas: HTMLCanvasElement;
@@ -13,12 +14,13 @@ export class Game {
     private inputManager: InputManager;
     private audioManager: AudioManager;
     private particleSystem: ParticleSystem;
+    private levelGenerator: LevelGenerator;
     
     private player: Player;
     private platforms: Platform[] = [];
     private memes: Meme[] = [];
     private trolls: Troll[] = [];
-    private finish: Finish;
+    private finish!: Finish;
     
     private score: number = 0;
     private lives: number = 3;
@@ -37,11 +39,11 @@ export class Game {
         this.inputManager = inputManager;
         this.audioManager = audioManager;
         this.particleSystem = new ParticleSystem();
+        this.levelGenerator = new LevelGenerator();
         
         this.player = new Player(100, 500);
-        this.finish = new Finish(this.levelWidth - 100, 400); // Подняли финиш выше
         
-        this.generateLevel();
+        this.generateRandomLevel();
     }
 
     public start(): void {
@@ -56,42 +58,29 @@ export class Game {
         }
     }
 
-    private generateLevel(): void {
-        // Платформы
-        this.platforms = [
-            new Platform(0, 580, 800, 20), // Земля
-            new Platform(200, 480, 150, 20),
-            new Platform(450, 380, 150, 20),
-            new Platform(700, 280, 150, 20),
-            new Platform(950, 380, 150, 20),
-            new Platform(1200, 480, 150, 20),
-            new Platform(1450, 380, 150, 20),
-            new Platform(1700, 280, 150, 20),
-            new Platform(1950, 380, 150, 20),
-            new Platform(2200, 480, 150, 20),
-            new Platform(2300, 380, 100, 20), // Платформа рядом с финишем
-        ];
-
-        // Мемы
-        this.memes = [
-            new Meme(250, 430),
-            new Meme(500, 330),
-            new Meme(750, 230),
-            new Meme(1000, 330),
-            new Meme(1250, 430),
-            new Meme(1500, 330),
-            new Meme(1750, 230),
-            new Meme(2000, 330),
-        ];
-
-        // Тролли
-        this.trolls = [
-            new Troll(300, 480),
-            new Troll(800, 280),
-            new Troll(1300, 480),
-            new Troll(1800, 280),
-        ];
+    public generateRandomLevel(): void {
+        const generatedLevel = this.levelGenerator.generateLevel(8); // 8 сегментов
+        
+        this.platforms = generatedLevel.platforms;
+        this.memes = generatedLevel.memes;
+        this.trolls = generatedLevel.trolls;
+        this.finish = generatedLevel.finish;
+        this.levelWidth = generatedLevel.width;
+        
+        // Сбрасываем позицию игрока
+        this.player.x = 100;
+        this.player.y = 500;
+        this.cameraX = 0;
+        
+        // Сбрасываем игровые параметры
+        this.score = 0;
+        this.lives = 3;
+        this.gameState = 'playing';
+        
+        this.updateUI();
     }
+
+
 
     public update(): void {
         if (this.gameState !== 'playing') return;

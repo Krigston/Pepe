@@ -254,14 +254,14 @@ export class Game {
                obj1.y < obj2.y + obj2.height &&
                obj1.y + obj1.height > obj2.y;
         
-        // Отладка для финиша
-        if (obj2 === this.finish) {
-            console.log('Проверка коллизии с финишем:', {
-                player: { x: obj1.x, y: obj1.y, width: obj1.width, height: obj1.height },
-                finish: { x: obj2.x, y: obj2.y, width: obj2.width, height: obj2.height },
-                collision: collision
-            });
-        }
+        // Отладка для финиша (временно отключена)
+        // if (obj2 === this.finish) {
+        //     console.log('Проверка коллизии с финишем:', {
+        //         player: { x: obj1.x, y: obj1.y, width: obj1.width, height: obj1.height },
+        //         finish: { x: obj2.x, y: obj2.y, width: obj2.width, height: obj2.height },
+        //         collision: collision
+        //     });
+        // }
         
         return collision;
     }

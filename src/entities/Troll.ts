@@ -6,9 +6,7 @@ export class Troll {
     public width: number = 35;
     public height: number = 35;
     
-    private vx: number = 1;
     private vy: number = 0;
-    private speed: number = 1;
     private gravity: number = 0.5;
     private direction: number = 1; // 1 = вправо, -1 = влево
     private animationTime: number = 0;
@@ -23,7 +21,7 @@ export class Troll {
         this.animationTime += 0.1;
         
         // Горизонтальное движение
-        this.x += this.vx * this.direction;
+        this.x += 1 * this.direction;
         
         // Гравитация
         this.vy += this.gravity;
@@ -53,12 +51,12 @@ export class Troll {
                     this.vy = 0;
                 }
                 // Коллизия слева
-                else if (this.vx > 0 && this.x < platform.x) {
+                else if (this.direction > 0 && this.x < platform.x) {
                     this.x = platform.x - this.width;
                     this.direction = -1;
                 }
                 // Коллизия справа
-                else if (this.vx < 0 && this.x > platform.x + platform.width) {
+                else if (this.direction < 0 && this.x > platform.x + platform.width) {
                     this.x = platform.x + platform.width;
                     this.direction = 1;
                 }

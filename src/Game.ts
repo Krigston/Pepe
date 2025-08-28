@@ -92,8 +92,18 @@ export class Game {
                 memes: this.memes.length,
                 trolls: this.trolls.length,
                 flyingMonsters: this.flyingMonsters.length,
-                width: this.levelWidth
+                width: this.levelWidth,
+                level: this.level
             });
+            
+            // Дополнительная информация о летающих монстрах
+            if (this.flyingMonsters.length > 0) {
+                console.log('Летающие монстры размещены в позициях:', 
+                    this.flyingMonsters.map(fm => ({ x: Math.round(fm.x), y: Math.round(fm.y) }))
+                );
+            } else {
+                console.warn('⚠️ На уровне', this.level, 'не создано ни одного летающего монстра!');
+            }
         } catch (error) {
             console.error('Ошибка при генерации уровня:', error);
             // Fallback на простой уровень

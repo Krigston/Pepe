@@ -48,6 +48,17 @@ export class LevelGenerator {
         for (let i = 1; i < numSegments - 1; i++) {
             const difficulty = i / (numSegments - 1); // Прогрессивная сложность
             const segment = this.createSegment(currentX, difficulty, segments[segments.length - 1]);
+            
+            // Гарантируем хотя бы одного летающего монстра во втором сегменте
+            if (i === 1 && segment.flyingMonsters.length === 0 && segment.platforms.length > 0) {
+                const platform = segment.platforms[Math.floor(segment.platforms.length / 2)];
+                const flyingY = platform.y - 80 - this.random() * 60;
+                segment.flyingMonsters.push(new FlyingMonster(
+                    platform.x + platform.width / 2,
+                    flyingY
+                ));
+            }
+            
             segments.push(segment);
             currentX += this.SEGMENT_WIDTH;
         }
@@ -117,9 +128,9 @@ export class LevelGenerator {
                 ));
             }
 
-            // Добавляем летающих монстров (только если это не первые платформы)
-            if (platform.x > startX + 200) { // Не размещаем слишком близко к старту
-                const flyingChance = Math.max(0.1, difficulty * 0.25); // Уменьшаем вероятность
+            // Добавляем летающих монстров (избегаем только самого старта)
+            if (platform.x > startX + 100) { // Уменьшили безопасную зону
+                const flyingChance = Math.max(0.25, difficulty * 0.4); // Увеличиваем вероятность
                 if (this.random() < flyingChance) {
                     const flyingY = currentY - 60 - this.random() * 80; // Летают выше платформ
                     flyingMonsters.push(new FlyingMonster(

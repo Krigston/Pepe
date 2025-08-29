@@ -3,6 +3,7 @@ import { InputManager } from './InputManager';
 import { AudioManager } from './AudioManager';
 import { MobileUtils } from './MobileUtils';
 import { VersionManager } from './VersionManager';
+import { TelegramWebApp } from './TelegramWebApp';
 
 class Main {
     private game: Game;
@@ -10,6 +11,12 @@ class Main {
     private audioManager: AudioManager;
 
     constructor() {
+        console.log('🎮 Pepe Game запускается...');
+        console.log(`📝 Версия: ${VersionManager.getVersion()}`);
+        
+        // Инициализация Telegram WebApp
+        TelegramWebApp.init();
+        
         this.audioManager = new AudioManager();
         this.inputManager = new InputManager();
         this.game = new Game(this.inputManager, this.audioManager);
@@ -39,7 +46,7 @@ class Main {
             this.disableMobileZoom();
             
             // Просто адаптируем игру под любую ориентацию
-            this.setupOrientationAdaptation();
+            await this.setupOrientationAdaptation();
             
             // Показываем мобильные элементы управления
             this.inputManager.showMobileControls();
@@ -96,9 +103,25 @@ class Main {
         }, 1000);
     }
     
-    private setupOrientationAdaptation(): void {
+    private async setupOrientationAdaptation(): Promise<void> {
         const isPortrait = window.innerHeight > window.innerWidth;
         
+        // Сначала пробуем Telegram WebApp API
+        if (TelegramWebApp.isTelegramWebApp()) {
+            console.log('📱 Запуск в Telegram - используем WebApp API');
+            
+            const success = await TelegramWebApp.requestFullscreenLandscape();
+            if (success) {
+                console.log('✅ Telegram: Горизонтальная ориентация установлена');
+                document.body.classList.add('landscape-ready');
+                
+                // Уведомляем Telegram что приложение готово
+                TelegramWebApp.ready();
+                return;
+            }
+        }
+        
+        // Fallback для обычного браузера
         if (isPortrait) {
             console.log('📱 Портретный режим - показываем сообщение о повороте');
             this.showRotateMessage();

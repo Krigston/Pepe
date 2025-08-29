@@ -1,0 +1,21 @@
+{
+  "name": "Пепе: Легендарное Приключение",
+  "short_name": "Pepe Game",
+  "description": "Собирай мемы, избегай троллей и стань легендой!",
+  "orientation": "landscape",
+  "fullscreen": true,
+  "version": "1.3.24",
+  "author": "Pepe Game Team",
+  "url": "https://your-domain.com",
+  "icon": {
+    "192": "/favicon-192.png",
+    "512": "/favicon-512.png"
+  },
+  "capabilities": [
+    "fullscreen",
+    "orientation_lock",
+    "device_motion"
+  ],
+  "theme_color": "#667eea",
+  "background_color": "#1a1a2e"
+}

@@ -57,24 +57,29 @@ export class Game {
     private setupResponsiveCanvas(): void {
         const resizeCanvas = () => {
             if (MobileUtils.isMobileDevice()) {
-                // Для мобильных устройств учитываем CSS поворот экрана
                 let screenWidth = window.innerWidth;
                 let screenHeight = window.innerHeight;
                 
-                // Если портретный режим, CSS поворачивает экран, меняем размеры
-                if (screenHeight > screenWidth) {
-                    [screenWidth, screenHeight] = [screenHeight, screenWidth];
+                // Если экран в портретном режиме, CSS поворачивает его на 90°
+                // поэтому для canvas нужно поменять размеры местами
+                if (!MobileUtils.isLandscape()) {
+                    // В портретном режиме: ширина canvas = высота экрана, высота canvas = ширина экрана
+                    this.canvas.width = screenHeight;
+                    this.canvas.height = screenWidth;
+                    
+                    // CSS размеры устанавливаются в vh/vw для повернутого экрана
+                    this.canvas.style.width = '100vh';
+                    this.canvas.style.height = '100vw';
+                } else {
+                    // В ландшафтном режиме используем обычные размеры
+                    this.canvas.width = screenWidth;
+                    this.canvas.height = screenHeight;
+                    
+                    this.canvas.style.width = '100vw';
+                    this.canvas.style.height = '100vh';
                 }
                 
-                // Устанавливаем размеры canvas для горизонтальной ориентации
-                this.canvas.width = screenWidth;
-                this.canvas.height = screenHeight;
-                
-                // CSS размеры позволяют CSS управлять отображением
-                this.canvas.style.width = '100%';
-                this.canvas.style.height = '100%';
-                
-                console.log(`Mobile canvas: ${screenWidth}x${screenHeight} (original: ${window.innerWidth}x${window.innerHeight})`);
+                console.log(`Mobile canvas: ${this.canvas.width}x${this.canvas.height} (screen: ${screenWidth}x${screenHeight}, ${MobileUtils.isLandscape() ? 'landscape' : 'portrait -> rotated'})`);
             } else {
                 // На десктопе используем стандартные размеры
                 this.canvas.width = 800;
@@ -98,7 +103,7 @@ export class Game {
         });
         
         window.addEventListener('orientationchange', () => {
-            setTimeout(resizeCanvas, 500); // Увеличена задержка для надежности
+            setTimeout(resizeCanvas, 500);
         });
     }
 

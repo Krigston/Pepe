@@ -20,25 +20,23 @@ class Main {
         this.startGameLoop();
     }
     
-    private initializeMobileSupport(): void {
+    private async initializeMobileSupport(): Promise<void> {
         const isMobile = MobileUtils.isMobileDevice();
         console.log(`🔍 Проверка устройства - isMobile: ${isMobile}`);
         console.log(`📱 Размер экрана: ${window.innerWidth}x${window.innerHeight}`);
         console.log(`👆 Поддержка тач: ${'ontouchstart' in window}`);
         console.log(`🖱️ maxTouchPoints: ${navigator.maxTouchPoints}`);
         console.log(`🌐 User Agent: ${navigator.userAgent}`);
+        console.log(`📐 Ориентация: ${MobileUtils.isLandscape() ? 'landscape' : 'portrait'}`);
         
         if (isMobile) {
             console.log('🔥 Мобильное устройство обнаружено!');
             
-            // Показываем оверлей с просьбой повернуть экран
-            MobileUtils.lockToLandscape();
-            
             // Отключаем зум
             this.disableMobileZoom();
             
-            // Настраиваем полноэкранный режим  
-            this.setupFullscreen();
+            // Пытаемся заблокировать ориентацию при первом взаимодействии пользователя
+            this.setupOrientationLock();
             
             // Показываем мобильные элементы управления
             this.inputManager.showMobileControls();
@@ -47,6 +45,33 @@ class Main {
         } else {
             console.log('🖥️ Десктопное устройство - мобильные функции отключены');
         }
+    }
+    
+    private setupOrientationLock(): void {
+        // Блокируем ориентацию при первом взаимодействии пользователя
+        const lockOrientation = async () => {
+            const success = await MobileUtils.lockToLandscape();
+            if (success) {
+                console.log('🎯 Автоповорот активирован - игра заблокирована в горизонтальном режиме!');
+                // Убираем обработчики после успешной блокировки
+                document.removeEventListener('touchstart', lockOrientation);
+                document.removeEventListener('click', lockOrientation);
+            } else {
+                console.log('⚠️ Не удалось заблокировать ориентацию - используйте поворот устройства вручную');
+            }
+        };
+        
+        // Ждем первого взаимодействия пользователя для блокировки ориентации
+        document.addEventListener('touchstart', lockOrientation, { once: true });
+        document.addEventListener('click', lockOrientation, { once: true });
+        
+        // Также пытаемся заблокировать сразу (может не сработать без пользовательского жеста)
+        setTimeout(async () => {
+            const success = await MobileUtils.lockToLandscape();
+            if (success) {
+                console.log('🚀 Ориентация заблокирована автоматически!');
+            }
+        }, 1000);
     }
     
 
@@ -79,27 +104,7 @@ class Main {
         }, { passive: false });
     }
     
-    private setupFullscreen(): void {
-        // Попытка войти в полноэкранный режим и заблокировать ориентацию
-        const enterFullscreen = () => {
-            MobileUtils.enterFullscreen().then(() => {
-                // Блокируем ориентацию после входа в полноэкранный режим
-                setTimeout(() => {
-                    MobileUtils.lockToLandscape();
-                }, 100);
-            }).catch(console.log);
-            
-            // Удаляем обработчик после первого использования
-            document.removeEventListener('touchstart', enterFullscreen);
-        };
-        
-        document.addEventListener('touchstart', enterFullscreen, { once: true });
-        
-        // Также пытаемся заблокировать ориентацию сразу
-        setTimeout(() => {
-            MobileUtils.lockToLandscape();
-        }, 1000);
-    }
+
     
     private initializeVersionDisplay(): void {
         const versionIndicator = document.getElementById('versionIndicator');

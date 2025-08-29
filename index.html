@@ -6,6 +6,8 @@
     <meta name="screen-orientation" content="landscape">
     <meta name="orientation" content="landscape">
     <meta name="apple-mobile-web-app-orientations" content="landscape">
+    <meta name="mobile-web-app-orientation" content="landscape">
+    <meta name="apple-touch-fullscreen" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -46,8 +48,8 @@
             html, body {
                 margin: 0 !important;
                 padding: 0 !important;
-                width: 100% !important;
-                height: 100% !important;
+                width: 100vw !important;
+                height: 100vh !important;
                 overflow: hidden !important;
                 position: fixed !important;
                 top: 0 !important;
@@ -79,45 +81,9 @@
             }
         }
         
-        /* ПРИНУДИТЕЛЬНАЯ ГОРИЗОНТАЛЬНАЯ ОРИЕНТАЦИЯ ДЛЯ ПОРТРЕТНОГО РЕЖИМА */
-        @media screen and (orientation: portrait) and (max-width: 1024px) {
-            html {
-                transform: rotate(90deg) !important;
-                transform-origin: center center !important;
-                width: 100vh !important;
-                height: 100vw !important;
-                position: fixed !important;
-                top: 0 !important;
-                left: 0 !important;
-                overflow: hidden !important;
-            }
-            
-            body {
-                width: 100vh !important;
-                height: 100vw !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                overflow: hidden !important;
-                transform: none !important;
-            }
-            
-            #gameContainer {
-                width: 100vh !important;
-                height: 100vw !important;
-                transform: none !important;
-                border: none !important;
-                border-radius: 0 !important;
-                position: fixed !important;
-                top: 0 !important;
-                left: 0 !important;
-            }
-            
-            #gameCanvas {
-                width: 100vh !important;
-                height: 100vw !important;
-                transform: none !important;
-            }
-        }
+
+        
+
         
         /* Убрана логика принудительного поворота экрана */
         
@@ -199,6 +165,10 @@
             z-index: 15;
             display: block;
         }
+        
+
+        
+
         
         /* Скрываем мобильные элементы управления на десктопе */
         @media screen and (min-width: 1025px) {
@@ -356,21 +326,8 @@
             }
         }
             
-            /* Адаптивные кнопки управления для портретного режима */
-            .dpad-container {
-                bottom: 15px;
-                left: 15px;
-                width: 160px;
-                height: 120px;
-            }
-            
-            .actions-container {
-                bottom: 15px;
-                right: 15px;
-                width: 160px;
-                height: 90px;
-            }
-        }
+        
+
         
         /* Убрана логика для горизонтальной ориентации */
         

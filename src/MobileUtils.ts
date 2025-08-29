@@ -40,14 +40,42 @@ export class MobileUtils {
         return 'ontouchstart' in window || (typeof navigator.maxTouchPoints === 'number' && navigator.maxTouchPoints > 0);
     }
     
-    static lockToLandscape(): void {
-        console.log('🔒 Принудительная горизонтальная ориентация через CSS...');
+    static async lockToLandscape(): Promise<boolean> {
+        console.log('🔒 Попытка заблокировать ориентацию в landscape...');
         
-        // Попытка заблокировать ориентацию (может не работать без пользовательского жеста)
-        if (screen.orientation && (screen.orientation as any).lock) {
-            (screen.orientation as any).lock('landscape').catch(() => {
-                console.log('ℹ️ Блокировка ориентации недоступна без пользовательского жеста');
-            });
+        try {
+            // Современный API для блокировки ориентации
+            if (screen.orientation && screen.orientation.lock) {
+                await screen.orientation.lock('landscape');
+                console.log('✅ Ориентация успешно заблокирована в landscape!');
+                return true;
+            }
+            
+            // Fallback для старых браузеров
+            if ((screen as any).lockOrientation) {
+                const result = (screen as any).lockOrientation(['landscape-primary', 'landscape-secondary']);
+                console.log('📱 Старый API lockOrientation:', result);
+                return result;
+            }
+            
+            if ((screen as any).mozLockOrientation) {
+                const result = (screen as any).mozLockOrientation(['landscape-primary', 'landscape-secondary']);
+                console.log('🦎 Mozilla lockOrientation:', result);
+                return result;
+            }
+            
+            if ((screen as any).msLockOrientation) {
+                const result = (screen as any).msLockOrientation(['landscape-primary', 'landscape-secondary']);
+                console.log('🔷 MS lockOrientation:', result);
+                return result;
+            }
+            
+            console.log('❌ Блокировка ориентации не поддерживается этим браузером');
+            return false;
+            
+        } catch (error) {
+            console.log('⚠️ Ошибка при блокировке ориентации:', error);
+            return false;
         }
     }
     

@@ -41,93 +41,52 @@ export class MobileUtils {
     }
     
     static lockToLandscape(): void {
-        console.log('🔒 Принудительная блокировка горизонтальной ориентации...');
+        console.log('🔒 Попытка блокировки горизонтальной ориентации...');
         
-        // Попытка заблокировать ориентацию на landscape - все возможные варианты
+        // Показываем оверлей с просьбой повернуть экран в портретном режиме
+        this.showRotationOverlay();
+        
+        // Попытка заблокировать ориентацию (может не работать без пользовательского жеста)
         if (screen.orientation && (screen.orientation as any).lock) {
-            // Пробуем все варианты landscape
-            const landscapeVariants = ['landscape', 'landscape-primary', 'landscape-secondary'];
-            landscapeVariants.forEach(variant => {
-                (screen.orientation as any).lock(variant).then(() => {
-                    console.log(`✅ Ориентация заблокирована на: ${variant}`);
-                }).catch((err: any) => {
-                    console.log(`❌ Не удалось заблокировать на ${variant}:`, err);
-                });
+            (screen.orientation as any).lock('landscape').catch(() => {
+                console.log('ℹ️ Блокировка ориентации недоступна без пользовательского жеста');
             });
         }
-        
-        // Альтернативные методы для старых браузеров
-        const orientationLock = (screen as any).lockOrientation || 
-                              (screen as any).mozLockOrientation || 
-                              (screen as any).msLockOrientation ||
-                              (screen as any).webkitLockOrientation;
-        
-        if (orientationLock) {
-            const landscapeVariants = ['landscape', 'landscape-primary', 'landscape-secondary'];
-            landscapeVariants.forEach(variant => {
-                try {
-                    orientationLock(variant);
-                    console.log(`✅ Fallback ориентация установлена: ${variant}`);
-                } catch (err) {
-                    console.log(`❌ Fallback метод неудачен для ${variant}:`, err);
-                }
-            });
-        }
-        
-        // Дополнительная проверка через CSS
-        this.forceLandscapeCSS();
     }
     
-    static forceLandscapeCSS(): void {
-        // Добавляем CSS правила для принуждения к горизонтальной ориентации
-        const style = document.createElement('style');
-        style.textContent = `
-            @media screen and (orientation: portrait) {
-                html {
-                    transform: rotate(90deg);
-                    transform-origin: center center;
-                    width: 100vh;
-                    height: 100vw;
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    overflow: hidden;
+    static showRotationOverlay(): void {
+        // Показываем оверлей только в портретном режиме на мобильных
+        const updateOverlay = () => {
+            const existingOverlay = document.getElementById('rotation-overlay');
+            
+            if (!this.isLandscape() && this.isMobileDevice()) {
+                if (!existingOverlay) {
+                    const overlay = document.createElement('div');
+                    overlay.id = 'rotation-overlay';
+                    overlay.className = 'rotation-overlay';
+                    overlay.innerHTML = `
+                        <div class="rotation-icon">📱</div>
+                        <h2>Поверните устройство</h2>
+                        <p>Для лучшего игрового опыта поверните устройство в горизонтальное положение</p>
+                    `;
+                    document.body.appendChild(overlay);
                 }
-                body {
-                    width: 100vh;
-                    height: 100vw;
-                    margin: 0;
-                    padding: 0;
-                    overflow: hidden;
+            } else {
+                if (existingOverlay) {
+                    existingOverlay.remove();
                 }
-            }
-        `;
-        document.head.appendChild(style);
-        console.log('📱 CSS принуждение к горизонтальной ориентации добавлено');
-    }
-    
-    static continuousLandscapeLock(): void {
-        // Непрерывная проверка и блокировка ориентации
-        const checkAndLock = () => {
-            if (this.isMobileDevice() && !this.isLandscape()) {
-                console.log('⚠️ Обнаружена вертикальная ориентация, принуждаем к горизонтальной...');
-                this.lockToLandscape();
             }
         };
         
-        // Проверяем каждые 500ms
-        setInterval(checkAndLock, 500);
+        // Проверяем сразу
+        updateOverlay();
         
-        // Также реагируем на события
+        // Добавляем слушателей событий
         window.addEventListener('orientationchange', () => {
-            setTimeout(checkAndLock, 100);
+            setTimeout(updateOverlay, 100);
         });
         
-        window.addEventListener('resize', () => {
-            setTimeout(checkAndLock, 100);
-        });
-        
-        console.log('🔄 Запущен непрерывный мониторинг ориентации');
+        window.addEventListener('resize', updateOverlay);
     }
     
     static enterFullscreen(): Promise<void> {

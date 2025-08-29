@@ -57,34 +57,41 @@ export class Game {
     private setupResponsiveCanvas(): void {
         const resizeCanvas = () => {
             if (MobileUtils.isMobileDevice()) {
-                // На мобильных устройствах учитываем принудительную ориентацию CSS
-                let screenWidth, screenHeight;
+                // Простое решение для мобильных - используем viewport размеры
+                const screenWidth = window.innerWidth;
+                const screenHeight = window.innerHeight;
                 
-                if (window.innerWidth > window.innerHeight) {
-                    // Горизонтальная ориентация или CSS принуждение
-                    screenWidth = Math.max(window.innerWidth, window.innerHeight);
-                    screenHeight = Math.min(window.innerWidth, window.innerHeight);
+                // Устанавливаем внутренние размеры canvas (игровое разрешение)
+                // Используем соотношение сторон близкое к стандартному разрешению игры
+                const aspectRatio = 800 / 600; // 4:3
+                let canvasWidth, canvasHeight;
+                
+                if (screenWidth / screenHeight > aspectRatio) {
+                    // Экран шире чем нужно - ограничиваем по высоте
+                    canvasHeight = screenHeight;
+                    canvasWidth = canvasHeight * aspectRatio;
                 } else {
-                    // Портретная ориентация с CSS поворотом - меняем местами
-                    screenWidth = window.innerHeight;
-                    screenHeight = window.innerWidth;
+                    // Экран уже чем нужно - ограничиваем по ширине
+                    canvasWidth = screenWidth;
+                    canvasHeight = canvasWidth / aspectRatio;
                 }
                 
-                // Устанавливаем размеры canvas
-                this.canvas.width = screenWidth;
-                this.canvas.height = screenHeight;
+                this.canvas.width = canvasWidth;
+                this.canvas.height = canvasHeight;
                 
-                // CSS размеры позволяют CSS медиа-запросам управлять отображением
-                this.canvas.style.width = '100%';
-                this.canvas.style.height = '100%';
+                // CSS размеры заполняют весь экран, браузер масштабирует
+                this.canvas.style.width = '100vw';
+                this.canvas.style.height = '100vh';
+                this.canvas.style.objectFit = 'contain';
                 
-                console.log(`Mobile canvas: ${screenWidth}x${screenHeight} (original: ${window.innerWidth}x${window.innerHeight})`);
+                console.log(`Mobile canvas: ${canvasWidth}x${canvasHeight} scaled to ${screenWidth}x${screenHeight}`);
             } else {
                 // На десктопе используем стандартные размеры
                 this.canvas.width = 800;
                 this.canvas.height = 600;
                 this.canvas.style.width = '800px';
                 this.canvas.style.height = '600px';
+                this.canvas.style.objectFit = 'initial';
                 
                 console.log('Desktop canvas size: 800x600');
             }

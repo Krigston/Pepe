@@ -1,8 +1,6 @@
 export class VersionManager {
-    private static readonly VERSION_KEY = 'game-version';
-    
     // Версия из package.json (будет обновляться автоматически)
-    public static readonly CURRENT_VERSION = '1.2.0';
+    public static readonly CURRENT_VERSION = '2.0.0';
     
     public static getVersion(): string {
         return this.CURRENT_VERSION;

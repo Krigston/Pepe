@@ -1,7 +1,7 @@
 export class MobileUtils {
     static isMobileDevice(): boolean {
         return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-               (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
+               (typeof navigator.maxTouchPoints === 'number' && navigator.maxTouchPoints > 2);
     }
     
     static isLandscape(): boolean {
@@ -20,6 +20,6 @@ export class MobileUtils {
     }
     
     static canUseTouch(): boolean {
-        return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        return 'ontouchstart' in window || (typeof navigator.maxTouchPoints === 'number' && navigator.maxTouchPoints > 0);
     }
 }

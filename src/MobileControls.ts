@@ -14,7 +14,6 @@ export interface TouchButton {
 export class MobileControls {
     private container: HTMLElement;
     private buttons: Map<string, TouchButton> = new Map();
-    private isVisible: boolean = false;
     
     // Состояние виртуальных кнопок
     private virtualKeys: { [key: string]: boolean } = {};
@@ -191,13 +190,11 @@ export class MobileControls {
     public show(): void {
         if (!MobileUtils.isMobileDevice()) return;
         
-        this.isVisible = true;
         this.container.style.display = 'block';
         this.updateLayout();
     }
     
     public hide(): void {
-        this.isVisible = false;
         this.container.style.display = 'none';
     }
     

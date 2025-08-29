@@ -2,8 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, orientation=landscape">
-    <meta name="screen-orientation" content="landscape">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -26,46 +25,31 @@
             position: relative;
         }
         
-        /* Принудительная горизонтальная ориентация для мобильных устройств */
-        @media screen and (max-width: 768px) and (orientation: portrait) {
-            html {
-                transform: rotate(90deg);
-                transform-origin: center center;
-                width: 100vh;
-                height: 100vw;
-                overflow: hidden;
-                position: fixed;
-                top: 0;
-                left: 0;
-            }
-            
+        /* Адаптация для мобильных устройств */
+        @media screen and (max-width: 768px) {
             body {
-                width: 100vh;
-                height: 100vw;
+                overflow: hidden;
                 margin: 0;
                 padding: 0;
-                overflow: hidden;
-                transform: none;
             }
             
             #gameContainer {
-                width: 100vh !important;
-                height: 100vw !important;
+                width: 100vw !important;
+                height: 100vh !important;
                 border: none;
                 border-radius: 0;
                 box-shadow: none;
-                position: relative;
+                position: fixed;
                 top: 0;
                 left: 0;
-                transform: none;
                 display: flex;
                 align-items: center;
                 justify-content: center;
             }
             
             #gameCanvas {
-                width: 100vh !important;
-                height: 100vw !important;
+                width: 100vw !important;
+                height: 100vh !important;
                 max-width: none !important;
                 max-height: none !important;
             }
@@ -241,23 +225,6 @@
         
         /* Мобильные медиа-запросы */
         @media screen and (max-width: 768px) {
-            body {
-                overflow: hidden;
-            }
-            
-            #gameContainer {
-                border: none;
-                border-radius: 0;
-                box-shadow: none;
-                width: 100vw;
-                height: 100vh;
-            }
-            
-            #gameCanvas {
-                width: 100vw;
-                height: 100vh;
-            }
-            
             #ui {
                 font-size: 16px;
                 top: 5px;
@@ -276,6 +243,21 @@
             #menu button {
                 padding: 12px 25px;
                 font-size: 16px;
+            }
+            
+            /* Адаптивные кнопки управления для портретного режима */
+            .dpad-container {
+                bottom: 15px;
+                left: 15px;
+                width: 160px;
+                height: 120px;
+            }
+            
+            .actions-container {
+                bottom: 15px;
+                right: 15px;
+                width: 160px;
+                height: 90px;
             }
         }
         

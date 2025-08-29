@@ -228,31 +228,14 @@ class Main {
         const progressBar = modal.querySelector('#progress-bar') as HTMLElement;
         const loadingText = modal.querySelector('#loading-text') as HTMLElement;
 
-        // Этап 1: Настройка ориентации (25%)
+        // Этап 1: Принудительная горизонтальная ориентация (25%)
         progressBar.style.width = '25%';
-        loadingText.textContent = 'Настройка ориентации экрана...';
+        loadingText.textContent = 'Принудительная горизонтальная ориентация...';
         await this.delay(800);
 
-        // Применяем настройки ориентации
-        try {
-            // Пробуем Screen Orientation API (работает только с пользовательским взаимодействием)
-            if ((screen as any).orientation && (screen as any).orientation.lock) {
-                await (screen as any).orientation.lock('landscape');
-                console.log('✅ Screen Orientation API: Ориентация заблокирована в landscape');
-            } else if ((screen as any).lockOrientation) {
-                // Fallback для старых браузеров
-                (screen as any).lockOrientation('landscape');
-                console.log('✅ Legacy API: Ориентация заблокирована в landscape');
-            } else if ((screen as any).mozLockOrientation) {
-                // Firefox fallback
-                (screen as any).mozLockOrientation('landscape');
-                console.log('✅ Firefox API: Ориентация заблокирована в landscape');
-            } else {
-                console.log('⚠️ Screen Orientation API не поддерживается на этом устройстве');
-            }
-        } catch (error) {
-            console.log('⚠️ Ошибка блокировки ориентации:', error);
-        }
+        // ПРИНУДИТЕЛЬНО делаем игру горизонтальной через CSS transform
+        this.forceGameLandscape();
+        console.log('✅ Игра принудительно переведена в горизонтальный режим');
 
         // Этап 2: Полноэкранный режим (50%)
         progressBar.style.width = '50%';
@@ -307,6 +290,56 @@ class Main {
 
     private delay(ms: number): Promise<void> {
         return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    private forceGameLandscape(): void {
+        console.log('🔄 ПРИНУДИТЕЛЬНЫЙ поворот игры в горизонтальный режим');
+        
+        const isPortrait = window.innerHeight > window.innerWidth;
+        
+        if (isPortrait) {
+            // Создаем CSS для принудительного поворота
+            const style = document.createElement('style');
+            style.id = 'force-landscape-game';
+            style.textContent = `
+                body {
+                    overflow: hidden !important;
+                }
+                
+                #gameContainer {
+                    transform: rotate(90deg) !important;
+                    transform-origin: center !important;
+                    width: 100vh !important;
+                    height: 100vw !important;
+                    position: fixed !important;
+                    top: 50% !important;
+                    left: 50% !important;
+                    margin-left: -50vh !important;
+                    margin-top: -50vw !important;
+                }
+                
+                #gameCanvas {
+                    width: 100% !important;
+                    height: 100% !important;
+                }
+                
+                /* Скрываем все остальные элементы интерфейса */
+                #menu {
+                    display: none !important;
+                }
+            `;
+            
+            // Удаляем старый стиль если есть
+            const oldStyle = document.getElementById('force-landscape-game');
+            if (oldStyle) oldStyle.remove();
+            
+            // Добавляем новый стиль
+            document.head.appendChild(style);
+            
+            console.log('✅ Применен CSS поворот: игра повернута на 90° в горизонтальный режим');
+        } else {
+            console.log('✅ Устройство уже в горизонтальном режиме');
+        }
     }
     
 

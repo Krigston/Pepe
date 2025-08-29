@@ -84,20 +84,86 @@ export class TelegramWebApp {
         }
     }
 
-    // Простая и эффективная блокировка ориентации
-    static lockScreenOrientation(): void {
-        // Проверяем поддержку Screen Orientation API
-        if ((screen as any).orientation && (screen as any).orientation.lock) {
-            try {
-                // Блокируем горизонтальную ориентацию
-                (screen as any).orientation.lock('landscape');
-                console.log('Ориентация успешно заблокирована в горизонтальном режиме.');
-            } catch (error) {
-                console.error('Не удалось заблокировать ориентацию:', error);
+    // Полноэкранный режим с принудительной горизонтальной ориентацией
+    static async lockScreenOrientation(): Promise<void> {
+        try {
+            // 1. Пробуем Screen Orientation API
+            if ((screen as any).orientation && (screen as any).orientation.lock) {
+                try {
+                    await (screen as any).orientation.lock('landscape');
+                    console.log('✅ Screen Orientation API: landscape заблокирован');
+                    return;
+                } catch (error) {
+                    console.log('⚠️ Screen Orientation API не сработал:', error);
+                }
             }
-        } else {
-            console.error('Screen Orientation API не поддерживается.');
+
+            // 2. Пробуем полноэкранный режим HTML5
+            const gameContainer = document.getElementById('gameContainer');
+            if (gameContainer && gameContainer.requestFullscreen) {
+                try {
+                    await gameContainer.requestFullscreen();
+                    console.log('✅ HTML5 Fullscreen активирован');
+                    
+                    // После входа в полноэкранный режим пробуем заблокировать ориентацию
+                    setTimeout(async () => {
+                        try {
+                            if ((screen as any).orientation && (screen as any).orientation.lock) {
+                                await (screen as any).orientation.lock('landscape');
+                                console.log('✅ Ориентация заблокирована в полноэкранном режиме');
+                            }
+                        } catch (e) {
+                            console.log('⚠️ Не удалось заблокировать ориентацию в полноэкранном режиме');
+                        }
+                    }, 100);
+                    return;
+                } catch (error) {
+                    console.log('⚠️ HTML5 Fullscreen не сработал:', error);
+                }
+            }
+
+            // 3. Fallback - CSS принудительный поворот
+            console.log('🔄 Применяем CSS fallback для горизонтальной ориентации');
+            this.applyCSSLandscapeForce();
+
+        } catch (error) {
+            console.error('❌ Все методы блокировки ориентации не сработали:', error);
         }
+    }
+
+    // CSS принудительный поворот в горизонтальный режим
+    static applyCSSLandscapeForce(): void {
+        const isPortrait = window.innerHeight > window.innerWidth;
+        if (!isPortrait) {
+            console.log('✅ Уже в горизонтальном режиме');
+            return;
+        }
+
+        console.log('🔄 Применяем CSS поворот для горизонтального режима');
+        
+        const style = document.createElement('style');
+        style.id = 'force-landscape-style';
+        style.textContent = `
+            body.force-landscape {
+                overflow: hidden;
+            }
+            body.force-landscape #gameContainer {
+                transform: rotate(90deg) translate(0, -100%);
+                transform-origin: top left;
+                width: 100vh;
+                height: 100vw;
+                position: fixed;
+                top: 0;
+                left: 0;
+            }
+        `;
+        
+        if (!document.getElementById('force-landscape-style')) {
+            document.head.appendChild(style);
+        }
+        
+        document.body.classList.add('force-landscape');
+        console.log('✅ CSS принудительный горизонтальный режим применен');
     }
 
     static isFullscreen(): boolean {

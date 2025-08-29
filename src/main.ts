@@ -293,50 +293,71 @@ class Main {
     }
 
     private forceGameLandscape(): void {
-        console.log('🔄 ПРИНУДИТЕЛЬНЫЙ поворот игры в горизонтальный режим');
+        console.log('🔄 Эмулируем автоповорот устройства');
         
         const isPortrait = window.innerHeight > window.innerWidth;
         
         if (isPortrait) {
-            // Создаем CSS для принудительного поворота
+            // Эмулируем автоповорот через изменение метатега viewport
+            const viewport = document.querySelector('meta[name="viewport"]') as HTMLMetaElement;
+            if (viewport) {
+                // Меняем viewport на горизонтальный режим
+                viewport.setAttribute('content', 
+                    'width=' + window.innerHeight + ', height=' + window.innerWidth + 
+                    ', initial-scale=1.0, maximum-scale=1.0, user-scalable=no'
+                );
+                console.log('📱 Viewport изменен на горизонтальный режим');
+            }
+            
+            // Принудительно устанавливаем размеры как при автоповороте
             const style = document.createElement('style');
-            style.id = 'force-landscape-game';
+            style.id = 'emulate-autorotate';
             style.textContent = `
-                body {
+                html, body {
+                    width: ${window.innerHeight}px !important;
+                    height: ${window.innerWidth}px !important;
                     overflow: hidden !important;
+                    position: fixed !important;
+                    top: 0 !important;
+                    left: 0 !important;
                 }
                 
                 #gameContainer {
-                    transform: rotate(90deg) !important;
-                    transform-origin: center !important;
-                    width: 100vh !important;
-                    height: 100vw !important;
+                    width: ${window.innerHeight}px !important;
+                    height: ${window.innerWidth}px !important;
                     position: fixed !important;
-                    top: 50% !important;
-                    left: 50% !important;
-                    margin-left: -50vh !important;
-                    margin-top: -50vw !important;
+                    top: 0 !important;
+                    left: 0 !important;
                 }
                 
                 #gameCanvas {
-                    width: 100% !important;
-                    height: 100% !important;
-                }
-                
-                /* Скрываем все остальные элементы интерфейса */
-                #menu {
-                    display: none !important;
+                    width: ${window.innerHeight}px !important;
+                    height: ${window.innerWidth}px !important;
                 }
             `;
             
-            // Удаляем старый стиль если есть
-            const oldStyle = document.getElementById('force-landscape-game');
+            // Удаляем старый стиль
+            const oldStyle = document.getElementById('emulate-autorotate');
             if (oldStyle) oldStyle.remove();
             
             // Добавляем новый стиль
             document.head.appendChild(style);
             
-            console.log('✅ Применен CSS поворот: игра повернута на 90° в горизонтальный режим');
+            // Принудительно изменяем размеры canvas
+            const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
+            if (canvas) {
+                canvas.width = window.innerHeight;
+                canvas.height = window.innerWidth;
+                console.log(`📱 Canvas изменен на ${window.innerHeight}x${window.innerWidth}`);
+            }
+            
+            // Имитируем событие изменения размера окна
+            setTimeout(() => {
+                window.dispatchEvent(new Event('resize'));
+                console.log('🔄 Событие resize отправлено');
+            }, 100);
+            
+            console.log('✅ Автоповорот эмулирован успешно');
         } else {
             console.log('✅ Устройство уже в горизонтальном режиме');
         }

@@ -81,32 +81,41 @@
         
         /* ПРИНУДИТЕЛЬНАЯ ГОРИЗОНТАЛЬНАЯ ОРИЕНТАЦИЯ ДЛЯ ПОРТРЕТНОГО РЕЖИМА */
         @media screen and (orientation: portrait) and (max-width: 1024px) {
-            .rotation-overlay {
+            html {
+                transform: rotate(90deg) !important;
+                transform-origin: center center !important;
+                width: 100vh !important;
+                height: 100vw !important;
                 position: fixed !important;
                 top: 0 !important;
                 left: 0 !important;
-                width: 100vw !important;
-                height: 100vh !important;
-                background: rgba(0, 0, 0, 0.9) !important;
-                z-index: 9999 !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-                flex-direction: column !important;
-                color: white !important;
-                font-family: Arial, sans-serif !important;
-                text-align: center !important;
+                overflow: hidden !important;
             }
             
-            .rotation-icon {
-                font-size: 4rem !important;
-                margin-bottom: 1rem !important;
-                animation: rotate 2s linear infinite !important;
+            body {
+                width: 100vh !important;
+                height: 100vw !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: hidden !important;
+                transform: none !important;
             }
             
-            @keyframes rotate {
-                from { transform: rotate(0deg); }
-                to { transform: rotate(360deg); }
+            #gameContainer {
+                width: 100vh !important;
+                height: 100vw !important;
+                transform: none !important;
+                border: none !important;
+                border-radius: 0 !important;
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+            }
+            
+            #gameCanvas {
+                width: 100vh !important;
+                height: 100vw !important;
+                transform: none !important;
             }
         }
         

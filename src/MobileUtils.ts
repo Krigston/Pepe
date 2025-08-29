@@ -41,10 +41,7 @@ export class MobileUtils {
     }
     
     static lockToLandscape(): void {
-        console.log('🔒 Попытка блокировки горизонтальной ориентации...');
-        
-        // Показываем оверлей с просьбой повернуть экран в портретном режиме
-        this.showRotationOverlay();
+        console.log('🔒 Принудительная горизонтальная ориентация через CSS...');
         
         // Попытка заблокировать ориентацию (может не работать без пользовательского жеста)
         if (screen.orientation && (screen.orientation as any).lock) {
@@ -54,40 +51,7 @@ export class MobileUtils {
         }
     }
     
-    static showRotationOverlay(): void {
-        // Показываем оверлей только в портретном режиме на мобильных
-        const updateOverlay = () => {
-            const existingOverlay = document.getElementById('rotation-overlay');
-            
-            if (!this.isLandscape() && this.isMobileDevice()) {
-                if (!existingOverlay) {
-                    const overlay = document.createElement('div');
-                    overlay.id = 'rotation-overlay';
-                    overlay.className = 'rotation-overlay';
-                    overlay.innerHTML = `
-                        <div class="rotation-icon">📱</div>
-                        <h2>Поверните устройство</h2>
-                        <p>Для лучшего игрового опыта поверните устройство в горизонтальное положение</p>
-                    `;
-                    document.body.appendChild(overlay);
-                }
-            } else {
-                if (existingOverlay) {
-                    existingOverlay.remove();
-                }
-            }
-        };
-        
-        // Проверяем сразу
-        updateOverlay();
-        
-        // Добавляем слушателей событий
-        window.addEventListener('orientationchange', () => {
-            setTimeout(updateOverlay, 100);
-        });
-        
-        window.addEventListener('resize', updateOverlay);
-    }
+
     
     static enterFullscreen(): Promise<void> {
         const element = document.documentElement;

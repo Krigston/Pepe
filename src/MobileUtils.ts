@@ -45,8 +45,8 @@ export class MobileUtils {
         
         try {
             // Современный API для блокировки ориентации
-            if (screen.orientation && screen.orientation.lock) {
-                await screen.orientation.lock('landscape');
+            if (screen.orientation && (screen.orientation as any).lock) {
+                await (screen.orientation as any).lock('landscape');
                 console.log('✅ Ориентация успешно заблокирована в landscape!');
                 return true;
             }

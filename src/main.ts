@@ -228,14 +228,14 @@ class Main {
         const progressBar = modal.querySelector('#progress-bar') as HTMLElement;
         const loadingText = modal.querySelector('#loading-text') as HTMLElement;
 
-        // Этап 1: Принудительная горизонтальная ориентация (25%)
+        // Этап 1: Адаптация игры под устройство (25%)
         progressBar.style.width = '25%';
-        loadingText.textContent = 'Принудительная горизонтальная ориентация...';
+        loadingText.textContent = 'Адаптация игры под ваше устройство...';
         await this.delay(800);
 
-        // ПРИНУДИТЕЛЬНО делаем игру горизонтальной через CSS transform
+        // Настраиваем игру под текущую ориентацию устройства
         this.forceGameLandscape();
-        console.log('✅ Игра принудительно переведена в горизонтальный режим');
+        console.log('✅ Игра адаптирована под устройство');
 
         // Этап 2: Полноэкранный режим (50%)
         progressBar.style.width = '50%';
@@ -293,93 +293,82 @@ class Main {
     }
 
     private forceGameLandscape(): void {
-        console.log('🔄 Эмулируем автоповорот устройства');
+        console.log('🎮 Настройка игры под горизонтальный режим');
         
         const isPortrait = window.innerHeight > window.innerWidth;
         
         if (isPortrait) {
-            // Эмулируем автоповорот через изменение метатега viewport
-            const viewport = document.querySelector('meta[name="viewport"]') as HTMLMetaElement;
-            if (viewport) {
-                // Меняем viewport на горизонтальный режим
-                viewport.setAttribute('content', 
-                    'width=' + window.innerHeight + ', height=' + window.innerWidth + 
-                    ', initial-scale=1.0, maximum-scale=1.0, user-scalable=no'
-                );
-                console.log('📱 Viewport изменен на горизонтальный режим');
-            }
+            console.log('📱 Устройство в портретном режиме - адаптируем игру');
             
-            // Простая и правильная эмуляция автоповорота
-            const style = document.createElement('style');
-            style.id = 'emulate-autorotate';
-            style.textContent = `
-                /* Убираем все отступы */
-                * {
-                    margin: 0;
-                    padding: 0;
-                    box-sizing: border-box;
-                }
-                
-                /* Поворачиваем весь body */
-                body {
-                    transform: rotate(90deg);
-                    transform-origin: center center;
-                    width: 100vh;
-                    height: 100vw;
-                    position: fixed;
-                    top: 50%;
-                    left: 50%;
-                    margin-left: -50vh;
-                    margin-top: -50vw;
-                    overflow: hidden;
-                }
-                
-                /* Контейнер игры на весь экран */
-                #gameContainer {
-                    width: 100vh !important;
-                    height: 100vw !important;
-                    position: relative !important;
-                }
-                
-                /* Canvas на весь контейнер */
-                #gameCanvas {
-                    width: 100% !important;
-                    height: 100% !important;
-                    display: block !important;
-                }
-                
-                /* Скрываем меню */
-                #menu {
-                    display: none !important;
-                }
-            `;
+            // Просто показываем подсказку пользователю повернуть устройство
+            this.showRotateHint();
             
-            // Удаляем старый стиль
-            const oldStyle = document.getElementById('emulate-autorotate');
-            if (oldStyle) oldStyle.remove();
-            
-            // Добавляем новый стиль
-            document.head.appendChild(style);
-            
-            // Обновляем логические размеры canvas под новую ориентацию
-            const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
-            if (canvas) {
-                // Меняем внутренние размеры canvas местами для горизонтального режима
-                canvas.width = window.innerHeight;
-                canvas.height = window.innerWidth;
-                
-                console.log(`📱 Canvas логические размеры: ${canvas.width}x${canvas.height}`);
-            }
-            
-            // Имитируем событие изменения размера окна
-            setTimeout(() => {
-                window.dispatchEvent(new Event('resize'));
-                console.log('🔄 Событие resize отправлено');
-            }, 100);
-            
-            console.log('✅ Автоповорот эмулирован успешно');
+            // Адаптируем размеры игры под портретный экран
+            this.adaptGameForPortrait();
         } else {
-            console.log('✅ Устройство уже в горизонтальном режиме');
+            console.log('✅ Устройство в горизонтальном режиме - игра готова');
+        }
+    }
+
+    private showRotateHint(): void {
+        // Показываем красивую подсказку о повороте устройства
+        const hint = document.createElement('div');
+        hint.id = 'rotate-hint';
+        hint.style.cssText = `
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(145deg, #4CAF50, #45a049);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: bold;
+            z-index: 9999;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+            animation: pulse 2s infinite;
+        `;
+        hint.innerHTML = '📱 Поверните устройство для лучшего игрового опыта';
+        
+        // Добавляем CSS анимацию
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pulse {
+                0% { transform: translateX(-50%) scale(1); }
+                50% { transform: translateX(-50%) scale(1.05); }
+                100% { transform: translateX(-50%) scale(1); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Убираем старую подсказку и добавляем новую
+        const oldHint = document.getElementById('rotate-hint');
+        if (oldHint) oldHint.remove();
+        document.body.appendChild(hint);
+        
+        // Автоматически убираем через 5 секунд
+        setTimeout(() => {
+            if (hint.parentNode) hint.remove();
+        }, 5000);
+    }
+
+    private adaptGameForPortrait(): void {
+        // Адаптируем игру для игры в портретном режиме (без поворотов)
+        const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
+        if (canvas) {
+            // Делаем canvas адаптивным под портретный экран
+            canvas.style.width = '100vw';
+            canvas.style.height = '60vh'; // Оставляем место для UI
+            canvas.style.maxHeight = '600px';
+            
+            console.log('📱 Canvas адаптирован под портретный режим');
+        }
+        
+        // Показываем мобильные элементы управления
+        const gameContainer = document.getElementById('gameContainer');
+        if (gameContainer) {
+            gameContainer.classList.add('portrait-mode');
         }
     }
     

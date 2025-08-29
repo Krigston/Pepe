@@ -120,8 +120,8 @@ export class TelegramWebApp {
     static async lockScreenOrientation(): Promise<boolean> {
         try {
             // Современный стандартный API
-            if (screen.orientation && screen.orientation.lock) {
-                await screen.orientation.lock('landscape');
+            if (screen.orientation && (screen.orientation as any).lock) {
+                await (screen.orientation as any).lock('landscape');
                 console.log('🔒 Стандартный API: screen.orientation.lock(landscape)');
                 return true;
             }

@@ -115,19 +115,25 @@ class Main {
     }
     
     private setupFullscreen(): void {
-        // Попытка войти в полноэкранный режим при первом touch
+        // Попытка войти в полноэкранный режим и заблокировать ориентацию
         const enterFullscreen = () => {
-            if (document.documentElement.requestFullscreen) {
-                document.documentElement.requestFullscreen().catch(console.log);
-            } else if ((document.documentElement as any).webkitRequestFullscreen) {
-                (document.documentElement as any).webkitRequestFullscreen();
-            }
+            MobileUtils.enterFullscreen().then(() => {
+                // Блокируем ориентацию после входа в полноэкранный режим
+                setTimeout(() => {
+                    MobileUtils.lockToLandscape();
+                }, 100);
+            }).catch(console.log);
             
             // Удаляем обработчик после первого использования
             document.removeEventListener('touchstart', enterFullscreen);
         };
         
         document.addEventListener('touchstart', enterFullscreen, { once: true });
+        
+        // Также пытаемся заблокировать ориентацию сразу
+        setTimeout(() => {
+            MobileUtils.lockToLandscape();
+        }, 1000);
     }
     
     private initializeVersionDisplay(): void {

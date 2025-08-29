@@ -402,12 +402,11 @@ export class Game {
         this.ctx.fillStyle = '#FF0000';
         this.ctx.font = '48px Arial';
         this.ctx.textAlign = 'center';
-        this.ctx.fillText('ИГРА ОКОНЧЕНА', this.canvas.width / 2, this.canvas.height / 2 - 50);
+        this.ctx.fillText('ИГРА ОКОНЧЕНА', this.canvas.width / 2, this.canvas.height / 2 - 80);
         
         this.ctx.fillStyle = '#FFFFFF';
         this.ctx.font = '24px Arial';
-        this.ctx.fillText(`Финальный счет: ${this.score}`, this.canvas.width / 2, this.canvas.height / 2);
-        this.ctx.fillText('Нажмите F5 для перезапуска', this.canvas.width / 2, this.canvas.height / 2 + 50);
+        this.ctx.fillText(`Финальный счет: ${this.score}`, this.canvas.width / 2, this.canvas.height / 2 - 20);
     }
 
     private renderVictory(): void {
@@ -417,12 +416,12 @@ export class Game {
         this.ctx.fillStyle = '#4CAF50';
         this.ctx.font = '48px Arial';
         this.ctx.textAlign = 'center';
-        this.ctx.fillText('ПОБЕДА!', this.canvas.width / 2, this.canvas.height / 2 - 50);
+        this.ctx.fillText('ПОБЕДА!', this.canvas.width / 2, this.canvas.height / 2 - 80);
         
         this.ctx.fillStyle = '#FFFFFF';
         this.ctx.font = '24px Arial';
-        this.ctx.fillText(`Счет: ${this.score}`, this.canvas.width / 2, this.canvas.height / 2);
-        this.ctx.fillText('Пепе стал легендой!', this.canvas.width / 2, this.canvas.height / 2 + 50);
+        this.ctx.fillText(`Счет: ${this.score}`, this.canvas.width / 2, this.canvas.height / 2 - 20);
+        this.ctx.fillText('Пепе стал легендой!', this.canvas.width / 2, this.canvas.height / 2 + 20);
     }
 
     private checkCollision(obj1: any, obj2: any): boolean {
@@ -474,6 +473,11 @@ export class Game {
         this.gameState = 'gameOver';
         this.audioManager.stopBackgroundMusic();
         this.audioManager.playSound('gameOver');
+        
+        // Показываем модалку с небольшой задержкой
+        setTimeout(() => {
+            this.showGameOverModal();
+        }, 500);
     }
 
     private victory(): void {
@@ -481,31 +485,120 @@ export class Game {
         this.level++; // Увеличиваем номер уровня
         this.audioManager.stopBackgroundMusic();
         this.audioManager.playSound('victory');
+        this.gameState = 'victory';
         
-        // Показываем сообщение о переходе на следующий уровень
-        this.showLevelComplete();
-        
-        // Автоматически генерируем следующий уровень через 2 секунды
+        // Показываем модалку победы с задержкой
         setTimeout(() => {
-            this.generateRandomLevel();
-        }, 2000);
+            this.showVictoryModal();
+        }, 800);
         
         console.log('Переход на уровень:', this.level);
     }
-
-    private showLevelComplete(): void {
-        // Временно показываем сообщение в UI
-        const levelElement = document.getElementById('level');
-        if (levelElement) {
-            levelElement.textContent = `🎉 Уровень ${this.level - 1} пройден!`;
-            levelElement.style.color = '#FFD700';
-            levelElement.style.fontWeight = 'bold';
-            
-            setTimeout(() => {
-                levelElement.textContent = `Уровень: ${this.level}`;
-                levelElement.style.color = '';
-                levelElement.style.fontWeight = '';
-            }, 2000);
+    
+    private showGameOverModal(): void {
+        // Удаляем предыдущие модалки, если есть
+        this.removeGameModals();
+        
+        const modal = document.createElement('div');
+        modal.id = 'gameOverModal';
+        modal.className = 'game-modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <h2>💀 Игра окончена</h2>
+                <p>Финальный счет: <strong>${this.score}</strong></p>
+                <p>Уровень: <strong>${this.level}</strong></p>
+                <div class="modal-buttons">
+                    <button id="restartBtn" class="modal-btn primary">🔄 Заново</button>
+                    <button id="newGameBtn" class="modal-btn secondary">🎮 Новая игра</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Добавляем обработчики
+        document.getElementById('restartBtn')?.addEventListener('click', () => {
+            this.restartCurrentLevel();
+            this.removeGameModals();
+        });
+        
+        document.getElementById('newGameBtn')?.addEventListener('click', () => {
+            this.resetToNewLevel();
+            this.removeGameModals();
+        });
+    }
+    
+    private showVictoryModal(): void {
+        // Удаляем предыдущие модалки, если есть
+        this.removeGameModals();
+        
+        const modal = document.createElement('div');
+        modal.id = 'victoryModal';
+        modal.className = 'game-modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <h2>🏆 Победа!</h2>
+                <p>Счет: <strong>${this.score}</strong></p>
+                <p>Уровень ${this.level - 1} пройден!</p>
+                <p>🎉 Пепе стал легендой!</p>
+                <div class="modal-buttons">
+                    <button id="continueBtn" class="modal-btn primary">➡️ Продолжить</button>
+                    <button id="newGameBtn2" class="modal-btn secondary">🎮 Новая игра</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Автоматически продолжаем через 3 секунды, если не нажали кнопку
+        const autoNext = setTimeout(() => {
+            this.generateRandomLevel();
+            this.removeGameModals();
+        }, 3000);
+        
+        // Добавляем обработчики
+        document.getElementById('continueBtn')?.addEventListener('click', () => {
+            clearTimeout(autoNext);
+            this.generateRandomLevel();
+            this.removeGameModals();
+        });
+        
+        document.getElementById('newGameBtn2')?.addEventListener('click', () => {
+            clearTimeout(autoNext);
+            this.resetToNewLevel();
+            this.removeGameModals();
+        });
+    }
+    
+    private removeGameModals(): void {
+        const modals = ['gameOverModal', 'victoryModal'];
+        modals.forEach(id => {
+            const modal = document.getElementById(id);
+            if (modal && modal.parentNode) {
+                modal.parentNode.removeChild(modal);
+            }
+        });
+    }
+    
+    private restartCurrentLevel(): void {
+        // Перезапуск текущего уровня без изменения счета и номера уровня
+        this.player.x = 100;
+        this.player.y = 500;
+        this.cameraX = 0;
+        this.cameraY = 0;
+        this.lives = 3;
+        this.gameState = 'playing';
+        this.levelCompleted = false;
+        this.invulnerabilityTime = 0;
+        this.updateUI();
+        this.audioManager.playBackgroundMusic();
+        
+        // Фокусируемся на canvas
+        const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
+        if (canvas) {
+            canvas.focus();
         }
     }
+
+
 } 

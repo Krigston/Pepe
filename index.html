@@ -4,10 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="screen-orientation" content="landscape">
+    <meta name="orientation" content="landscape">
+    <meta name="apple-mobile-web-app-orientations" content="landscape">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="format-detection" content="telephone=no">
+    <meta name="msapplication-config" content="none">
+    <meta name="theme-color" content="#667eea">
     <title>Пепе: Легендарное Приключение</title>
     <style>
         * {
@@ -35,6 +39,41 @@
             height: 100%;
             margin: 0;
             padding: 0;
+        }
+        
+        /* ПРИНУДИТЕЛЬНАЯ ГОРИЗОНТАЛЬНАЯ ОРИЕНТАЦИЯ ДЛЯ МОБИЛЬНЫХ */
+        @media screen and (max-width: 768px) and (orientation: portrait) {
+            html {
+                transform: rotate(90deg);
+                transform-origin: center center;
+                width: 100vh !important;
+                height: 100vw !important;
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                overflow: hidden !important;
+            }
+            
+            body {
+                width: 100vh !important;
+                height: 100vw !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: hidden !important;
+                transform: none !important;
+            }
+            
+            #gameContainer {
+                width: 100vh !important;
+                height: 100vw !important;
+                transform: none !important;
+            }
+            
+            #gameCanvas {
+                width: 100vh !important;
+                height: 100vw !important;
+                transform: none !important;
+            }
         }
         
         /* Адаптация для мобильных устройств */

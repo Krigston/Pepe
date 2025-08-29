@@ -24,6 +24,9 @@ class Main {
         if (MobileUtils.isMobileDevice()) {
             console.log('Мобильное устройство обнаружено');
             
+            // Принудительно блокируем горизонтальную ориентацию для игры
+            MobileUtils.lockToLandscape();
+            
             // Отключаем зум
             this.disableMobileZoom();
             
@@ -33,7 +36,7 @@ class Main {
             // Показываем мобильные элементы управления
             this.inputManager.showMobileControls();
             
-            console.log('Мобильная версия инициализирована (без принудительной ориентации)');
+            console.log('Мобильная версия инициализирована с горизонтальной ориентацией');
         }
     }
     
@@ -68,15 +71,25 @@ class Main {
     }
     
     private setupFullscreen(): void {
-        // Попытка войти в полноэкранный режим без блокировки ориентации
+        // Попытка войти в полноэкранный режим и заблокировать ориентацию
         const enterFullscreen = () => {
-            MobileUtils.enterFullscreen().catch(console.log);
+            MobileUtils.enterFullscreen().then(() => {
+                // Блокируем ориентацию после входа в полноэкранный режим
+                setTimeout(() => {
+                    MobileUtils.lockToLandscape();
+                }, 100);
+            }).catch(console.log);
             
             // Удаляем обработчик после первого использования
             document.removeEventListener('touchstart', enterFullscreen);
         };
         
         document.addEventListener('touchstart', enterFullscreen, { once: true });
+        
+        // Также пытаемся заблокировать ориентацию сразу
+        setTimeout(() => {
+            MobileUtils.lockToLandscape();
+        }, 1000);
     }
     
     private initializeVersionDisplay(): void {

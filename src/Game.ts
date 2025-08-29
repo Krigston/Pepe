@@ -86,9 +86,13 @@ export class Game {
         // Первоначальная настройка
         resizeCanvas();
         
-        // Слушаем изменения размера окна
+        // Слушаем изменения размера окна и ориентации
         window.addEventListener('resize', () => {
             setTimeout(resizeCanvas, 100);
+        });
+        
+        window.addEventListener('orientationchange', () => {
+            setTimeout(resizeCanvas, 500); // Увеличена задержка для надежности
         });
     }
 

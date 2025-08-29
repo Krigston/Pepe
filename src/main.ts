@@ -97,38 +97,53 @@ class Main {
     }
     
     private setupAutoRotation(): void {
-        // Имитируем пользовательское взаимодействие для активации Screen Orientation API
-        const triggerRotation = () => {
-            // Создаем невидимую кнопку и автоматически "нажимаем" её
-            const hiddenButton = document.createElement('button');
-            hiddenButton.style.cssText = `
-                position: absolute;
-                top: -9999px;
-                left: -9999px;
-                width: 1px;
-                height: 1px;
-                opacity: 0;
-                pointer-events: none;
-            `;
-            
-            hiddenButton.addEventListener('click', async () => {
+        // Множественные попытки активации автоповорота
+        const attemptRotation = async () => {
+            try {
+                // Попытка войти в полноэкранный режим сначала
+                await MobileUtils.enterFullscreen();
+                console.log('📺 Полноэкранный режим активирован');
+                
+                // Затем блокируем ориентацию
                 const success = await MobileUtils.lockToLandscape();
                 if (success) {
-                    console.log('🎯 Автоповорот активирован скрыто!');
+                    console.log('🎯 Автоповорот активирован автоматически!');
+                    return true;
                 }
-                hiddenButton.remove();
-            });
-            
-            document.body.appendChild(hiddenButton);
-            
-            // Имитируем клик
-            setTimeout(() => {
-                hiddenButton.click();
-            }, 100);
+            } catch (error) {
+                console.log('⚠️ Не удалось активировать автоповорот:', error);
+            }
+            return false;
         };
         
-        // Запускаем попытку поворота под заглушкой
-        setTimeout(triggerRotation, 200);
+        // Попытка 1: Сразу под заглушкой
+        setTimeout(attemptRotation, 200);
+        
+        // Попытка 2: При первом любом взаимодействии пользователя
+        const documentEvents = ['touchstart', 'touchend', 'click', 'mousedown', 'keydown'];
+        const tryOnInteraction = async (event: Event) => {
+            console.log(`🎯 Попытка автоповорота при событии: ${event.type}`);
+            const success = await attemptRotation();
+            if (success) {
+                // Убираем все обработчики после успеха
+                documentEvents.forEach(eventName => {
+                    document.removeEventListener(eventName, tryOnInteraction);
+                });
+                console.log('✅ Автоповорот активирован, обработчики событий удалены');
+            }
+        };
+        
+        documentEvents.forEach(event => {
+            document.addEventListener(event, tryOnInteraction, { passive: true });
+        });
+        
+        // Попытка 3: При изменении ориентации
+        window.addEventListener('orientationchange', attemptRotation, { once: true });
+        
+        // Попытка 4: При фокусе окна
+        window.addEventListener('focus', attemptRotation, { once: true });
+        
+        console.log('🔄 Настроено множество попыток автоповорота');
     }
     
 

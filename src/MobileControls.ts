@@ -148,11 +148,7 @@ export class MobileControls {
             e.preventDefault();
         });
         
-        // Обработка изменения ориентации
-        window.addEventListener('orientationchange', () => {
-            setTimeout(() => this.updateLayout(), 100);
-        });
-        
+        // Обработка изменения размера окна
         window.addEventListener('resize', () => {
             this.updateLayout();
         });

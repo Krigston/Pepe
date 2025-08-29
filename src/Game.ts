@@ -57,25 +57,18 @@ export class Game {
     private setupResponsiveCanvas(): void {
         const resizeCanvas = () => {
             if (MobileUtils.isMobileDevice()) {
-                // На мобильных устройствах адаптируем под экран
+                // На мобильных устройствах используем фактические размеры экрана
                 const screenSize = MobileUtils.getScreenSize();
-                const isPortrait = window.innerHeight > window.innerWidth;
                 
-                if (isPortrait) {
-                    // В портретном режиме поворачиваем размеры для горизонтального геймплея
-                    this.canvas.width = screenSize.height;
-                    this.canvas.height = screenSize.width;
-                    console.log(`Mobile canvas (rotated): ${screenSize.height}x${screenSize.width}`);
-                } else {
-                    // В ландшафтном режиме используем обычные размеры
-                    this.canvas.width = screenSize.width;
-                    this.canvas.height = screenSize.height;
-                    console.log(`Mobile canvas (landscape): ${screenSize.width}x${screenSize.height}`);
-                }
+                // Всегда используем полный экран для мобильных
+                this.canvas.width = screenSize.width;
+                this.canvas.height = screenSize.height;
                 
                 // CSS размеры всегда полный экран
                 this.canvas.style.width = '100vw';
                 this.canvas.style.height = '100vh';
+                
+                console.log(`Mobile canvas: ${screenSize.width}x${screenSize.height}`);
             } else {
                 // На десктопе используем стандартные размеры
                 this.canvas.width = 800;
@@ -93,13 +86,9 @@ export class Game {
         // Первоначальная настройка
         resizeCanvas();
         
-        // Слушаем изменения размера окна и ориентации
+        // Слушаем изменения размера окна
         window.addEventListener('resize', () => {
-            setTimeout(resizeCanvas, 100); // Небольшая задержка для корректной работы
-        });
-        
-        window.addEventListener('orientationchange', () => {
-            setTimeout(resizeCanvas, 300); // Больше времени для смены ориентации
+            setTimeout(resizeCanvas, 100);
         });
     }
 

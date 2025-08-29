@@ -57,18 +57,28 @@ export class Game {
     private setupResponsiveCanvas(): void {
         const resizeCanvas = () => {
             if (MobileUtils.isMobileDevice()) {
-                // На мобильных устройствах используем фактические размеры экрана
-                const screenSize = MobileUtils.getScreenSize();
+                // На мобильных устройствах учитываем принудительную ориентацию CSS
+                let screenWidth, screenHeight;
                 
-                // Всегда используем полный экран для мобильных
-                this.canvas.width = screenSize.width;
-                this.canvas.height = screenSize.height;
+                if (window.innerWidth > window.innerHeight) {
+                    // Горизонтальная ориентация или CSS принуждение
+                    screenWidth = Math.max(window.innerWidth, window.innerHeight);
+                    screenHeight = Math.min(window.innerWidth, window.innerHeight);
+                } else {
+                    // Портретная ориентация с CSS поворотом - меняем местами
+                    screenWidth = window.innerHeight;
+                    screenHeight = window.innerWidth;
+                }
                 
-                // CSS размеры всегда полный экран
-                this.canvas.style.width = '100vw';
-                this.canvas.style.height = '100vh';
+                // Устанавливаем размеры canvas
+                this.canvas.width = screenWidth;
+                this.canvas.height = screenHeight;
                 
-                console.log(`Mobile canvas: ${screenSize.width}x${screenSize.height}`);
+                // CSS размеры позволяют CSS медиа-запросам управлять отображением
+                this.canvas.style.width = '100%';
+                this.canvas.style.height = '100%';
+                
+                console.log(`Mobile canvas: ${screenWidth}x${screenHeight} (original: ${window.innerWidth}x${window.innerHeight})`);
             } else {
                 // На десктопе используем стандартные размеры
                 this.canvas.width = 800;

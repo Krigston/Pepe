@@ -2,14 +2,18 @@ export class MobileUtils {
     static isMobileDevice(): boolean {
         // Простая и надежная проверка мобильных устройств
         const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        const hasTouchPoints = typeof navigator.maxTouchPoints === 'number' && navigator.maxTouchPoints > 2;
-        const result = isMobileUA || hasTouchPoints;
+        const hasTouchPoints = typeof navigator.maxTouchPoints === 'number' && navigator.maxTouchPoints > 0;
+        const hasTouch = 'ontouchstart' in window;
+        const smallScreen = window.innerWidth <= 1024 || window.innerHeight <= 768;
+        const result = isMobileUA || hasTouchPoints || hasTouch || smallScreen;
         
         console.log('📱 Проверка мобильного устройства:', {
             userAgent: navigator.userAgent,
             isMobileUA: isMobileUA,
             maxTouchPoints: navigator.maxTouchPoints,
             hasTouchPoints: hasTouchPoints,
+            hasTouch: hasTouch,
+            smallScreen: smallScreen,
             screenSize: { width: window.innerWidth, height: window.innerHeight },
             result: result
         });

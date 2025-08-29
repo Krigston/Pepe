@@ -41,10 +41,8 @@
             padding: 0;
         }
         
-        /* ПРИНУДИТЕЛЬНАЯ ГОРИЗОНТАЛЬНАЯ ОРИЕНТАЦИЯ ДЛЯ ВСЕХ МОБИЛЬНЫХ */
-        @media screen and (orientation: portrait) and (pointer: coarse), 
-               screen and (max-width: 768px) and (orientation: portrait),
-               screen and (max-height: 768px) and (orientation: portrait) {
+        /* ПРИНУДИТЕЛЬНАЯ ГОРИЗОНТАЛЬНАЯ ОРИЕНТАЦИЯ ДЛЯ МОБИЛЬНЫХ В ПОРТРЕТНОМ РЕЖИМЕ */
+        @media screen and (orientation: portrait) and (max-width: 1024px) and (pointer: coarse) {
             html {
                 transform: rotate(90deg) !important;
                 transform-origin: center center !important;
@@ -69,6 +67,11 @@
                 width: 100vh !important;
                 height: 100vw !important;
                 transform: none !important;
+                border: none !important;
+                border-radius: 0 !important;
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
             }
             
             #gameCanvas {
@@ -78,8 +81,8 @@
             }
         }
         
-        /* Адаптация для мобильных устройств */
-        @media screen and (max-width: 768px) {
+        /* Адаптация для мобильных устройств В ГОРИЗОНТАЛЬНОМ РЕЖИМЕ */
+        @media screen and (max-width: 1024px) and (orientation: landscape) {
             body {
                 overflow: hidden;
                 margin: 0;

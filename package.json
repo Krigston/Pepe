@@ -1,6 +1,6 @@
 {
   "name": "pepe-game",
-  "version": "2.0.0",
+  "version": "1.2.2",
   "description": "Легендарная игра про Пепе с поддержкой мобильных устройств",
   "main": "index.html",
   "keywords": [

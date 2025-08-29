@@ -292,129 +292,138 @@ class Main {
     }
 
     private setupResponsiveGame(): void {
-        console.log('🎮 Настройка адаптивной игры (как у профессионалов)');
+        console.log('🎮 Принудительная настройка горизонтальной игры');
         
-        const isLandscape = window.innerWidth > window.innerHeight;
         const isMobile = MobileUtils.isMobileDevice();
         
-        if (isMobile && !isLandscape) {
-            // Показываем красивую подсказку о горизонтальном режиме
-            this.showLandscapeHint();
+        if (isMobile) {
+            // АВТОМАТИЧЕСКИ делаем игру горизонтальной
+            this.forceLandscapeMode();
+        } else {
+            // На десктопе просто настраиваем canvas
+            this.setupAdaptiveCanvas();
         }
         
-        // Настраиваем canvas адаптивно
-        this.setupAdaptiveCanvas();
-        
-        // Слушаем изменения ориентации
-        this.setupOrientationListener();
-        
-        console.log(`📱 Адаптивный режим: ${isLandscape ? 'Landscape' : 'Portrait'}, Mobile: ${isMobile}`);
+        console.log(`📱 Горизонтальный режим активирован для мобильных`);
     }
 
-    private showLandscapeHint(): void {
-        // Профессиональная подсказка как в реальных играх
-        const hint = document.createElement('div');
-        hint.id = 'landscape-hint';
-        hint.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 99999;
-            color: white;
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 20px;
-            box-sizing: border-box;
-        `;
+    private forceLandscapeMode(): void {
+        console.log('🔄 ПРИНУДИТЕЛЬНЫЙ поворот в горизонтальный режим');
         
-        hint.innerHTML = `
-            <div style="font-size: 4rem; margin-bottom: 20px;">📱➡️</div>
-            <h2 style="margin: 0 0 15px 0; font-size: 1.5rem;">Для лучшего игрового опыта</h2>
-            <p style="margin: 0 0 20px 0; font-size: 1rem; opacity: 0.9;">
-                Поверните устройство в горизонтальное положение
-            </p>
-            <div style="font-size: 0.8rem; opacity: 0.7;">
-                Вы также можете играть в текущем режиме
-            </div>
-        `;
+        // 1. Настраиваем viewport для горизонтального отображения
+        this.setupLandscapeViewport();
         
-        document.body.appendChild(hint);
+        // 2. Применяем CSS transform для поворота интерфейса
+        this.applyLandscapeTransform();
         
-        // Автоматически скрываем при повороте в landscape
-        const hideOnLandscape = () => {
-            if (window.innerWidth > window.innerHeight) {
-                hint.remove();
-                window.removeEventListener('resize', hideOnLandscape);
+        // 3. Настраиваем canvas под горизонтальный режим
+        this.setupLandscapeCanvas();
+        
+        console.log('✅ Игра принудительно переведена в горизонтальный режим');
+    }
+
+    private setupLandscapeViewport(): void {
+        const viewport = document.querySelector('meta[name="viewport"]') as HTMLMetaElement;
+        if (viewport) {
+            // Эмулируем горизонтальный режим через viewport
+            const height = window.innerHeight;
+            const width = window.innerWidth;
+            
+            if (height > width) {
+                // Если portrait - меняем местами размеры в viewport
+                viewport.content = `width=${height}, height=${width}, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover`;
+                console.log(`📐 Viewport настроен: ${height}x${width} (принудительно горизонтально)`);
             }
-        };
+        }
+    }
+
+    private applyLandscapeTransform(): void {
+        const height = window.innerHeight;
+        const width = window.innerWidth;
         
-        window.addEventListener('resize', hideOnLandscape);
+        if (height > width) {
+            // Применяем CSS transform для принудительного поворота
+            const style = document.createElement('style');
+            style.id = 'force-landscape-transform';
+            style.textContent = `
+                body {
+                    width: 100vh !important;
+                    height: 100vw !important;
+                    transform: rotate(90deg) !important;
+                    transform-origin: center center !important;
+                    position: fixed !important;
+                    top: 50% !important;
+                    left: 50% !important;
+                    margin-left: -50vh !important;
+                    margin-top: -50vw !important;
+                    overflow: hidden !important;
+                }
+                
+                #gameContainer {
+                    width: 100% !important;
+                    height: 100% !important;
+                    position: relative !important;
+                }
+                
+                #gameCanvas {
+                    width: 100% !important;
+                    height: 100% !important;
+                    display: block !important;
+                }
+                
+                #menu {
+                    display: none !important;
+                }
+            `;
+            
+            // Удаляем старые стили и добавляем новые
+            const oldStyle = document.getElementById('force-landscape-transform');
+            if (oldStyle) oldStyle.remove();
+            document.head.appendChild(style);
+            
+            console.log('🎨 CSS transform применен для принудительного поворота');
+        }
+    }
+
+    private setupLandscapeCanvas(): void {
+        const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
+        if (!canvas) return;
         
-        // Также убираем по тапу
-        hint.addEventListener('click', () => {
-            hint.remove();
-            window.removeEventListener('resize', hideOnLandscape);
-        });
+        const height = window.innerHeight;
+        const width = window.innerWidth;
+        
+        // Настраиваем canvas под принудительно горизонтальный режим
+        if (height > width) {
+            // При повороте высота становится шириной и наоборот
+            canvas.width = height;
+            canvas.height = width;
+        } else {
+            canvas.width = width;
+            canvas.height = height;
+        }
+        
+        console.log(`🎮 Canvas настроен для горизонтального режима: ${canvas.width}x${canvas.height}`);
+        
+        // Уведомляем игру об изменении размеров
+        setTimeout(() => {
+            window.dispatchEvent(new Event('resize'));
+        }, 100);
     }
 
     private setupAdaptiveCanvas(): void {
         const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
         if (!canvas) return;
         
-        const isLandscape = window.innerWidth > window.innerHeight;
+        // Для десктопа - обычные размеры
+        canvas.style.width = '100vw';
+        canvas.style.height = '100vh';
+        canvas.style.objectFit = 'contain';
         
-        if (isLandscape) {
-            // Горизонтальный режим - используем весь экран
-            canvas.style.width = '100vw';
-            canvas.style.height = '100vh';
-            canvas.style.objectFit = 'contain';
-        } else {
-            // Портретный режим - адаптируем размеры
-            canvas.style.width = '100vw';
-            canvas.style.height = '70vh'; // Оставляем место для UI
-            canvas.style.objectFit = 'contain';
-        }
-        
-        // Обновляем внутренние размеры canvas
         const rect = canvas.getBoundingClientRect();
         canvas.width = rect.width;
         canvas.height = rect.height;
         
-        console.log(`🎨 Canvas адаптирован: ${canvas.width}x${canvas.height} (${isLandscape ? 'Landscape' : 'Portrait'})`);
-    }
-
-    private setupOrientationListener(): void {
-        const handleOrientationChange = () => {
-            setTimeout(() => {
-                this.setupAdaptiveCanvas();
-                
-                const isLandscape = window.innerWidth > window.innerHeight;
-                const isMobile = MobileUtils.isMobileDevice();
-                
-                // Убираем подсказку если переключились в landscape
-                const hint = document.getElementById('landscape-hint');
-                if (hint && isLandscape) {
-                    hint.remove();
-                }
-                
-                // Показываем подсказку если переключились в portrait на мобильном
-                if (isMobile && !isLandscape && !hint) {
-                    this.showLandscapeHint();
-                }
-                
-                console.log(`🔄 Ориентация изменена: ${isLandscape ? 'Landscape' : 'Portrait'}`);
-            }, 100);
-        };
-        
-        window.addEventListener('orientationchange', handleOrientationChange);
-        window.addEventListener('resize', handleOrientationChange);
+        console.log(`🖥️ Desktop canvas: ${canvas.width}x${canvas.height}`);
     }
 
 

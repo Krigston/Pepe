@@ -38,6 +38,9 @@ class Main {
             // Отключаем зум
             this.disableMobileZoom();
             
+            // Настройка принудительной блокировки ориентации
+            MobileUtils.setupOrientationLock();
+            
             // Автоматический поворот экрана под заглушкой
             this.setupAutoRotation();
             

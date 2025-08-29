@@ -43,40 +43,50 @@ export class MobileUtils {
     static async lockToLandscape(): Promise<boolean> {
         console.log('🔒 Попытка заблокировать ориентацию в landscape...');
         
-        try {
-            // Современный API для блокировки ориентации
-            if (screen.orientation && (screen.orientation as any).lock) {
-                await (screen.orientation as any).lock('landscape');
+        // Проверка поддержки API
+        if ((screen as any).orientation && (screen as any).orientation.lock) {
+            try {
+                await (screen as any).orientation.lock('landscape');
                 console.log('✅ Ориентация успешно заблокирована в landscape!');
                 return true;
+            } catch (error) {
+                console.log('⚠️ Не удалось заблокировать ориентацию:', error);
+                return false;
             }
-            
-            // Fallback для старых браузеров
-            if ((screen as any).lockOrientation) {
-                const result = (screen as any).lockOrientation(['landscape-primary', 'landscape-secondary']);
-                console.log('📱 Старый API lockOrientation:', result);
-                return result;
-            }
-            
-            if ((screen as any).mozLockOrientation) {
-                const result = (screen as any).mozLockOrientation(['landscape-primary', 'landscape-secondary']);
-                console.log('🦎 Mozilla lockOrientation:', result);
-                return result;
-            }
-            
-            if ((screen as any).msLockOrientation) {
-                const result = (screen as any).msLockOrientation(['landscape-primary', 'landscape-secondary']);
-                console.log('🔷 MS lockOrientation:', result);
-                return result;
-            }
-            
-            console.log('❌ Блокировка ориентации не поддерживается этим браузером');
-            return false;
-            
-        } catch (error) {
-            console.log('⚠️ Ошибка при блокировке ориентации:', error);
-            return false;
         }
+        
+        console.log('❌ Screen Orientation API не поддерживается');
+        return false;
+    }
+    
+    static setupOrientationLock(): void {
+        // Блокировка поворота экрана в горизонтальном режиме
+        window.addEventListener('orientationchange', () => {
+            // Проверяем, если устройство в портретном режиме (0 или 180 градусов)
+            if ((window as any).orientation === 0 || (window as any).orientation === 180) {
+                console.log('📱 Обнаружен портретный режим, попытка блокировки landscape...');
+                
+                // Попытка автоматически повернуть в landscape
+                if ((screen as any).orientation && (screen as any).orientation.lock) {
+                    (screen as any).orientation.lock('landscape').catch((error: any) => {
+                        console.log('⚠️ Не удалось заблокировать в landscape:', error);
+                    });
+                }
+            } else {
+                console.log('✅ Устройство в горизонтальном режиме');
+            }
+        }, false);
+        
+        // Попытка заблокировать сразу при инициализации
+        setTimeout(() => {
+            if ((screen as any).orientation && (screen as any).orientation.lock) {
+                (screen as any).orientation.lock('landscape').catch((error: any) => {
+                    console.log('ℹ️ Начальная блокировка landscape неуспешна:', error);
+                });
+            }
+        }, 1000);
+        
+        console.log('🔄 Настроена автоматическая блокировка горизонтальной ориентации');
     }
     
 

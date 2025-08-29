@@ -38,11 +38,8 @@ class Main {
             // Отключаем зум
             this.disableMobileZoom();
             
-            // Настройка принудительной блокировки ориентации
-            MobileUtils.setupOrientationLock();
-            
-            // Автоматический поворот экрана под заглушкой
-            this.setupAutoRotation();
+            // Принудительный полноэкранный режим и автоповорот
+            this.forceFullscreenAndRotation();
             
             // Показываем мобильные элементы управления
             this.inputManager.showMobileControls();
@@ -99,54 +96,78 @@ class Main {
         }, 1000);
     }
     
-    private setupAutoRotation(): void {
-        // Множественные попытки активации автоповорота
-        const attemptRotation = async () => {
-            try {
-                // Попытка войти в полноэкранный режим сначала
-                await MobileUtils.enterFullscreen();
-                console.log('📺 Полноэкранный режим активирован');
-                
-                // Затем блокируем ориентацию
-                const success = await MobileUtils.lockToLandscape();
-                if (success) {
-                    console.log('🎯 Автоповорот активирован автоматически!');
-                    return true;
+    private forceFullscreenAndRotation(): void {
+        // Создаем невидимую кнопку для активации полноэкранного режима
+        const createHiddenButton = () => {
+            const btn = document.createElement('button');
+            btn.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 100vw;
+                height: 100vh;
+                background: transparent;
+                border: none;
+                z-index: 10000;
+                cursor: pointer;
+                font-size: 0;
+                opacity: 0;
+            `;
+            
+            btn.addEventListener('click', async () => {
+                try {
+                    // 1. Входим в полноэкранный режим
+                    await MobileUtils.enterFullscreen();
+                    console.log('📺 Полноэкранный режим активирован');
+                    
+                    // 2. Блокируем ориентацию в landscape
+                    const success = await MobileUtils.lockToLandscape();
+                    if (success) {
+                        console.log('🎯 АВТОПОВОРОТ АКТИВИРОВАН!');
+                        btn.remove(); // Удаляем кнопку после успеха
+                    }
+                    
+                } catch (error) {
+                    console.log('⚠️ Ошибка активации:', error);
                 }
-            } catch (error) {
-                console.log('⚠️ Не удалось активировать автоповорот:', error);
-            }
-            return false;
+            });
+            
+            document.body.appendChild(btn);
+            return btn;
         };
         
-        // Попытка 1: Сразу под заглушкой
-        setTimeout(attemptRotation, 200);
-        
-        // Попытка 2: При первом любом взаимодействии пользователя
-        const documentEvents = ['touchstart', 'touchend', 'click', 'mousedown', 'keydown'];
-        const tryOnInteraction = async (event: Event) => {
-            console.log(`🎯 Попытка автоповорота при событии: ${event.type}`);
-            const success = await attemptRotation();
-            if (success) {
-                // Убираем все обработчики после успеха
-                documentEvents.forEach(eventName => {
-                    document.removeEventListener(eventName, tryOnInteraction);
-                });
-                console.log('✅ Автоповорот активирован, обработчики событий удалены');
-            }
+        // Показываем инструкцию пользователю
+        const showInstruction = () => {
+            const instruction = document.createElement('div');
+            instruction.style.cssText = `
+                position: fixed;
+                top: 10px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 10px 20px;
+                border-radius: 20px;
+                font-size: 14px;
+                z-index: 10001;
+                text-align: center;
+                animation: pulse 2s infinite;
+            `;
+            instruction.textContent = '👆 Коснитесь экрана для активации горизонтального режима';
+            document.body.appendChild(instruction);
+            
+            // Удаляем через 5 секунд
+            setTimeout(() => instruction.remove(), 5000);
         };
         
-        documentEvents.forEach(event => {
-            document.addEventListener(event, tryOnInteraction, { passive: true });
-        });
+        // Создаем кнопку и показываем инструкцию
+        setTimeout(() => {
+            createHiddenButton();
+            showInstruction();
+        }, 1200); // После заглушки загрузки
         
-        // Попытка 3: При изменении ориентации
-        window.addEventListener('orientationchange', attemptRotation, { once: true });
-        
-        // Попытка 4: При фокусе окна
-        window.addEventListener('focus', attemptRotation, { once: true });
-        
-        console.log('🔄 Настроено множество попыток автоповорота');
+        console.log('🎯 Настроена принудительная активация полноэкранного режима и автоповорота');
     }
     
 

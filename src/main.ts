@@ -309,30 +309,51 @@ class Main {
                 console.log('📱 Viewport изменен на горизонтальный режим');
             }
             
-            // Принудительно устанавливаем размеры как при автоповороте
+            // Эмулируем ПОЛНЫЙ автоповорот: размеры + физический поворот
             const style = document.createElement('style');
             style.id = 'emulate-autorotate';
             style.textContent = `
-                html, body {
-                    width: ${window.innerHeight}px !important;
-                    height: ${window.innerWidth}px !important;
-                    overflow: hidden !important;
-                    position: fixed !important;
-                    top: 0 !important;
-                    left: 0 !important;
+                /* Поворачиваем весь документ как при автоповороте */
+                html {
+                    transform: rotate(90deg);
+                    transform-origin: center center;
+                    width: 100vh;
+                    height: 100vw;
+                    overflow: hidden;
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                }
+                
+                body {
+                    width: 100vh;
+                    height: 100vw;
+                    margin: 0;
+                    padding: 0;
+                    overflow: hidden;
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
                 }
                 
                 #gameContainer {
-                    width: ${window.innerHeight}px !important;
-                    height: ${window.innerWidth}px !important;
-                    position: fixed !important;
+                    width: 100vh !important;
+                    height: 100vw !important;
+                    position: relative !important;
                     top: 0 !important;
                     left: 0 !important;
                 }
                 
                 #gameCanvas {
-                    width: ${window.innerHeight}px !important;
-                    height: ${window.innerWidth}px !important;
+                    width: 100vh !important;
+                    height: 100vw !important;
+                    display: block;
+                }
+                
+                /* Скрываем элементы которые мешают */
+                #menu {
+                    display: none !important;
                 }
             `;
             
@@ -343,12 +364,18 @@ class Main {
             // Добавляем новый стиль
             document.head.appendChild(style);
             
-            // Принудительно изменяем размеры canvas
+            // Принудительно изменяем размеры canvas под поворот
             const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
             if (canvas) {
+                // При повороте ширина и высота меняются местами
                 canvas.width = window.innerHeight;
                 canvas.height = window.innerWidth;
-                console.log(`📱 Canvas изменен на ${window.innerHeight}x${window.innerWidth}`);
+                
+                // Обновляем стили canvas
+                canvas.style.width = `${window.innerHeight}px`;
+                canvas.style.height = `${window.innerWidth}px`;
+                
+                console.log(`📱 Canvas перенастроен на горизонтальный режим: ${window.innerHeight}x${window.innerWidth}`);
             }
             
             // Имитируем событие изменения размера окна

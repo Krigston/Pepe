@@ -57,15 +57,22 @@ export class Game {
     private setupResponsiveCanvas(): void {
         const resizeCanvas = () => {
             if (MobileUtils.isMobileDevice()) {
-                // Простое использование размеров экрана как есть
+                // Умная адаптация размеров для поворота
                 const screenWidth = window.innerWidth;
                 const screenHeight = window.innerHeight;
+                const isPortrait = screenHeight > screenWidth;
                 
-                this.canvas.width = screenWidth;
-                this.canvas.height = screenHeight;
+                if (isPortrait) {
+                    // В портретном режиме canvas будет повернут, меняем размеры местами
+                    this.canvas.width = screenHeight;
+                    this.canvas.height = screenWidth;
+                } else {
+                    // В горизонтальном режиме используем обычные размеры
+                    this.canvas.width = screenWidth;
+                    this.canvas.height = screenHeight;
+                }
                 
-                this.canvas.style.width = '100vw';
-                this.canvas.style.height = '100vh';
+                // CSS размеры не меняем - поворот делается через transform
                 
                 console.log(`Mobile canvas: ${screenWidth}x${screenHeight} (${MobileUtils.isLandscape() ? 'landscape' : 'portrait'})`);
             } else {

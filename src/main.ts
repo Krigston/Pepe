@@ -38,8 +38,8 @@ class Main {
             // Отключаем зум
             this.disableMobileZoom();
             
-            // Принудительный полноэкранный режим и автоповорот
-            this.forceFullscreenAndRotation();
+            // Умная адаптация под портретный режим
+            this.adaptPortraitMode();
             
             // Показываем мобильные элементы управления
             this.inputManager.showMobileControls();
@@ -96,78 +96,56 @@ class Main {
         }, 1000);
     }
     
-    private forceFullscreenAndRotation(): void {
-        // Создаем невидимую кнопку для активации полноэкранного режима
-        const createHiddenButton = () => {
-            const btn = document.createElement('button');
-            btn.style.cssText = `
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                width: 100vw;
-                height: 100vh;
-                background: transparent;
-                border: none;
-                z-index: 10000;
-                cursor: pointer;
-                font-size: 0;
-                opacity: 0;
-            `;
-            
-            btn.addEventListener('click', async () => {
-                try {
-                    // 1. Входим в полноэкранный режим
-                    await MobileUtils.enterFullscreen();
-                    console.log('📺 Полноэкранный режим активирован');
-                    
-                    // 2. Блокируем ориентацию в landscape
-                    const success = await MobileUtils.lockToLandscape();
-                    if (success) {
-                        console.log('🎯 АВТОПОВОРОТ АКТИВИРОВАН!');
-                        btn.remove(); // Удаляем кнопку после успеха
-                    }
-                    
-                } catch (error) {
-                    console.log('⚠️ Ошибка активации:', error);
-                }
-            });
-            
-            document.body.appendChild(btn);
-            return btn;
-        };
+    private adaptPortraitMode(): void {
+        // Если устройство в портретном режиме - адаптируем игру под горизонтальное отображение
+        const isPortrait = window.innerHeight > window.innerWidth;
         
-        // Показываем инструкцию пользователю
-        const showInstruction = () => {
-            const instruction = document.createElement('div');
-            instruction.style.cssText = `
-                position: fixed;
-                top: 10px;
-                left: 50%;
-                transform: translateX(-50%);
-                background: rgba(0, 0, 0, 0.8);
-                color: white;
-                padding: 10px 20px;
-                border-radius: 20px;
-                font-size: 14px;
-                z-index: 10001;
-                text-align: center;
-                animation: pulse 2s infinite;
-            `;
-            instruction.textContent = '👆 Коснитесь экрана для активации горизонтального режима';
-            document.body.appendChild(instruction);
+        if (isPortrait) {
+            console.log('📱 Портретный режим обнаружен - применяем умную адаптацию');
             
-            // Удаляем через 5 секунд
-            setTimeout(() => instruction.remove(), 5000);
-        };
+            // Применяем CSS классы для умного поворота
+            document.body.classList.add('portrait-adapted');
+            
+            // Настраиваем canvas для портретного режима с горизонтальным контентом
+            const canvas = document.querySelector('#gameCanvas') as HTMLCanvasElement;
+            if (canvas) {
+                canvas.style.transform = 'rotate(90deg)';
+                canvas.style.transformOrigin = 'center center';
+                canvas.style.width = '100vh';
+                canvas.style.height = '100vw';
+                canvas.style.position = 'fixed';
+                canvas.style.top = '50%';
+                canvas.style.left = '50%';
+                canvas.style.marginTop = '-50vw';
+                canvas.style.marginLeft = '-50vh';
+            }
+            
+            // Поворачиваем мобильные контролы
+            const mobileControls = document.querySelector('.mobile-controls') as HTMLElement;
+            if (mobileControls) {
+                mobileControls.style.transform = 'rotate(90deg)';
+                mobileControls.style.transformOrigin = 'center center';
+                mobileControls.style.width = '100vh';
+                mobileControls.style.height = '100vw';
+                mobileControls.style.position = 'fixed';
+                mobileControls.style.top = '50%';
+                mobileControls.style.left = '50%';
+                mobileControls.style.marginTop = '-50vw';
+                mobileControls.style.marginLeft = '-50vh';
+            }
+        } else {
+            console.log('🖥️ Горизонтальный режим - используем стандартное отображение');
+            document.body.classList.add('landscape-mode');
+        }
         
-        // Создаем кнопку и показываем инструкцию
-        setTimeout(() => {
-            createHiddenButton();
-            showInstruction();
-        }, 1200); // После заглушки загрузки
+        // Отслеживаем изменения ориентации
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                location.reload(); // Перезагружаем для корректной адаптации
+            }, 100);
+        });
         
-        console.log('🎯 Настроена принудительная активация полноэкранного режима и автоповорота');
+        console.log('🎯 Умная адаптация ориентации настроена');
     }
     
 

@@ -111,22 +111,19 @@ class Main {
             console.log('📱 Запуск в Telegram - используем WebApp API');
             
             const success = await TelegramWebApp.requestFullscreenLandscape();
-            if (success) {
-                console.log('✅ Telegram: Горизонтальная ориентация установлена');
-                document.body.classList.add('landscape-ready');
-                
-                // Настраиваем постоянный контроль ориентации
-                TelegramWebApp.setupOrientationControl();
-                
-                // Уведомляем Telegram что приложение готово
-                TelegramWebApp.ready();
-                return;
-            } else {
-                console.log('⚠️ Telegram API не сработал, применяем CSS адаптацию');
-                // Fallback: применяем CSS адаптацию для Telegram
-                this.applyTelegramCSSFix();
-                return;
-            }
+            console.log('📱 Telegram API результат:', success);
+            
+            // Настраиваем постоянный контроль ориентации
+            TelegramWebApp.setupOrientationControl();
+            
+            // ВСЕГДА применяем CSS fix для Telegram, независимо от API
+            this.applyTelegramCSSFix();
+            
+            document.body.classList.add('landscape-ready');
+            
+            // Уведомляем Telegram что приложение готово
+            TelegramWebApp.ready();
+            return;
         }
         
         // Fallback для обычного браузера
@@ -149,34 +146,53 @@ class Main {
     }
     
     private applyTelegramCSSFix(): void {
-        console.log('🔧 Применяем CSS fix для Telegram');
+        console.log('🔧 Применяем принудительный горизонтальный CSS fix для Telegram');
         
-        const isPortrait = window.innerHeight > window.innerWidth;
-        if (isPortrait) {
-            // Добавляем специальный класс для Telegram
-            document.body.classList.add('telegram-portrait-fix');
-            
-            // Принудительно скрываем адресную строку в Telegram
-            if (window.scrollTo) {
-                window.scrollTo(0, 1);
+        // Добавляем CSS для принудительного горизонтального режима
+        const style = document.createElement('style');
+        style.id = 'telegram-landscape-fix';
+        style.textContent = `
+            /* Принудительная горизонтальная ориентация для Telegram */
+            body.telegram-forced-landscape {
+                transform-origin: top left;
+                overflow: hidden;
             }
             
-            // Уведомляем пользователя что в Telegram лучше повернуть
-            const telegramMessage = document.createElement('div');
-            telegramMessage.className = 'telegram-rotate-hint';
-            telegramMessage.innerHTML = `
-                <div class="telegram-hint-content">
-                    <div style="font-size: 3rem; margin-bottom: 15px;">📱</div>
-                    <h3>Поверните устройство</h3>
-                    <p>Для лучшего опыта в Telegram<br>используйте горизонтальную ориентацию</p>
-                </div>
-            `;
-            document.body.appendChild(telegramMessage);
+            /* Поворачиваем весь контент на 90 градусов */
+            body.telegram-forced-landscape #app {
+                transform: rotate(90deg) translateY(-100%);
+                transform-origin: top left;
+                width: 100vh;
+                height: 100vw;
+                position: fixed;
+                top: 0;
+                left: 0;
+            }
             
-            console.log('💡 Показано уведомление о повороте для Telegram');
+            /* Скрываем полосы прокрутки */
+            body.telegram-forced-landscape {
+                overflow: hidden;
+                -webkit-overflow-scrolling: touch;
+            }
+        `;
+        
+        if (!document.getElementById('telegram-landscape-fix')) {
+            document.head.appendChild(style);
+        }
+        
+        // Применяем принудительный поворот для вертикальной ориентации
+        const isPortrait = window.innerHeight > window.innerWidth;
+        if (isPortrait) {
+            console.log('📱 Портретный режим в Telegram - принудительно поворачиваем');
+            document.body.classList.add('telegram-forced-landscape');
         } else {
+            console.log('📱 Уже горизонтальный режим в Telegram');
             document.body.classList.add('telegram-landscape-ready');
-            console.log('✅ Telegram в горизонтальном режиме готов');
+        }
+        
+        // Принудительно скрываем адресную строку
+        if (window.scrollTo) {
+            window.scrollTo(0, 1);
         }
     }
     

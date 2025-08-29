@@ -30,6 +30,7 @@ export class LevelGenerator {
     private readonly MIN_PLATFORM_WIDTH = 80;
     private readonly MAX_PLATFORM_WIDTH = 200;
     private readonly GROUND_Y = 550;
+    private readonly MIN_ENEMY_DISTANCE = 150; // Минимальное расстояние между врагами
 
     public generateLevel(numSegments: number = 6, seed?: number): GeneratedLevel {
         if (seed) {
@@ -52,11 +53,27 @@ export class LevelGenerator {
             // Гарантируем хотя бы одного летающего монстра во втором сегменте
             if (i === 1 && segment.flyingMonsters.length === 0 && segment.platforms.length > 0) {
                 const platform = segment.platforms[Math.floor(segment.platforms.length / 2)];
+                const flyingX = platform.x + platform.width / 2;
                 const flyingY = platform.y - 80 - this.random() * 60;
-                segment.flyingMonsters.push(new FlyingMonster(
-                    platform.x + platform.width / 2,
-                    flyingY
-                ));
+                const existingEnemies = this.getAllEnemyPositions(segment.trolls, segment.flyingMonsters);
+                
+                if (this.checkEnemyDistance(flyingX, flyingY, existingEnemies)) {
+                    segment.flyingMonsters.push(new FlyingMonster(flyingX, flyingY));
+                    console.log(`✅ Гарантированный летающий монстр размещен (${flyingX}, ${flyingY})`);
+                } else {
+                    // Пытаемся найти альтернативную позицию
+                    for (let j = 0; j < segment.platforms.length; j++) {
+                        const altPlatform = segment.platforms[j];
+                        const altX = altPlatform.x + altPlatform.width / 2;
+                        const altY = altPlatform.y - 100;
+                        
+                        if (this.checkEnemyDistance(altX, altY, existingEnemies)) {
+                            segment.flyingMonsters.push(new FlyingMonster(altX, altY));
+                            console.log(`✅ Гарантированный летающий монстр размещен в альтернативной позиции (${altX}, ${altY})`);
+                            break;
+                        }
+                    }
+                }
             }
             
             segments.push(segment);
@@ -122,21 +139,32 @@ export class LevelGenerator {
             }
 
             if (this.random() < difficulty * 0.4 && platform.width > 120) {
-                trolls.push(new Troll(
-                    platform.x + 20, 
-                    platform.y - 35
-                ));
+                const trollX = platform.x + 20;
+                const trollY = platform.y - 35;
+                const existingEnemies = this.getAllEnemyPositions(trolls, flyingMonsters);
+                
+                if (this.checkEnemyDistance(trollX, trollY, existingEnemies)) {
+                    trolls.push(new Troll(trollX, trollY));
+                    console.log(`✅ Тролль размещен в безопасной позиции (${trollX}, ${trollY})`);
+                } else {
+                    console.log(`❌ Тролль НЕ размещен - слишком близко к другому врагу (${trollX}, ${trollY})`);
+                }
             }
 
             // Добавляем летающих монстров (избегаем только самого старта)
             if (platform.x > startX + 100) { // Уменьшили безопасную зону
                 const flyingChance = Math.max(0.25, difficulty * 0.4); // Увеличиваем вероятность
                 if (this.random() < flyingChance) {
+                    const flyingX = platform.x + platform.width / 2;
                     const flyingY = currentY - 60 - this.random() * 80; // Летают выше платформ
-                    flyingMonsters.push(new FlyingMonster(
-                        platform.x + platform.width / 2,
-                        flyingY
-                    ));
+                    const existingEnemies = this.getAllEnemyPositions(trolls, flyingMonsters);
+                    
+                    if (this.checkEnemyDistance(flyingX, flyingY, existingEnemies)) {
+                        flyingMonsters.push(new FlyingMonster(flyingX, flyingY));
+                        console.log(`✅ Летающий монстр размещен в безопасной позиции (${flyingX}, ${flyingY})`);
+                    } else {
+                        console.log(`❌ Летающий монстр НЕ размещен - слишком близко к другому врагу (${flyingX}, ${flyingY})`);
+                    }
                 }
             }
 
@@ -243,6 +271,9 @@ export class LevelGenerator {
 
         // Проверяем и исправляем проходимость
         this.ensurePlayability(allPlatforms, allMemes, allTrolls);
+        
+        // Финальная проверка расстояний между всеми врагами
+        this.validateEnemySpacing(allTrolls, allFlyingMonsters);
 
         return {
             platforms: allPlatforms,
@@ -302,5 +333,63 @@ export class LevelGenerator {
             this.seed = 1;
         }
         return this.seed / 233280;
+    }
+
+    private checkEnemyDistance(x: number, y: number, existingEnemies: Array<{x: number, y: number}>): boolean {
+        for (const enemy of existingEnemies) {
+            const distance = Math.sqrt(Math.pow(x - enemy.x, 2) + Math.pow(y - enemy.y, 2));
+            if (distance < this.MIN_ENEMY_DISTANCE) {
+                return false; // Слишком близко к существующему врагу
+            }
+        }
+        return true; // Расстояние безопасное
+    }
+
+    private getAllEnemyPositions(trolls: Troll[], flyingMonsters: FlyingMonster[]): Array<{x: number, y: number}> {
+        const positions: Array<{x: number, y: number}> = [];
+        trolls.forEach(troll => positions.push({x: troll.x, y: troll.y}));
+        flyingMonsters.forEach(fm => positions.push({x: fm.x, y: fm.y}));
+        return positions;
+    }
+
+    private validateEnemySpacing(trolls: Troll[], flyingMonsters: FlyingMonster[]): void {
+        const allEnemies = [...trolls, ...flyingMonsters];
+        const enemiesToRemove: Array<{type: 'troll' | 'flying', index: number}> = [];
+
+        // Проверяем каждую пару врагов
+        for (let i = 0; i < allEnemies.length; i++) {
+            for (let j = i + 1; j < allEnemies.length; j++) {
+                const enemy1 = allEnemies[i];
+                const enemy2 = allEnemies[j];
+                const distance = Math.sqrt(Math.pow(enemy1.x - enemy2.x, 2) + Math.pow(enemy1.y - enemy2.y, 2));
+                
+                if (distance < this.MIN_ENEMY_DISTANCE) {
+                    // Удаляем второго врага (с большим индексом)
+                    const isEnemy2Troll = j < trolls.length;
+                    const enemy2Index = isEnemy2Troll ? j : j - trolls.length;
+                    
+                    enemiesToRemove.push({
+                        type: isEnemy2Troll ? 'troll' : 'flying',
+                        index: enemy2Index
+                    });
+                    
+                    console.log(`⚠️ Удаляем врага из-за слишком близкого расстояния (${distance.toFixed(1)}px < ${this.MIN_ENEMY_DISTANCE}px)`);
+                }
+            }
+        }
+
+        // Удаляем врагов в обратном порядке индексов, чтобы не сбить нумерацию
+        enemiesToRemove.sort((a, b) => b.index - a.index);
+        for (const enemy of enemiesToRemove) {
+            if (enemy.type === 'troll' && enemy.index < trolls.length) {
+                trolls.splice(enemy.index, 1);
+            } else if (enemy.type === 'flying' && enemy.index < flyingMonsters.length) {
+                flyingMonsters.splice(enemy.index, 1);
+            }
+        }
+
+        if (enemiesToRemove.length > 0) {
+            console.log(`🧹 Удалено ${enemiesToRemove.length} врагов для обеспечения проходимости`);
+        }
     }
 }

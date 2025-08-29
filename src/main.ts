@@ -215,7 +215,13 @@ class Main {
         const menu = document.getElementById('menu');
 
         if (startBtn) {
-            startBtn.addEventListener('click', () => {
+            startBtn.addEventListener('click', async () => {
+                // Блокируем ориентацию при нажатии кнопки (требует пользовательского взаимодействия)
+                if (TelegramWebApp.isTelegramWebApp()) {
+                    console.log('🎮 Активируем блокировку ориентации при старте игры');
+                    TelegramWebApp.lockScreenOrientation();
+                }
+                
                 this.game.start();
                 if (menu) menu.classList.add('hidden');
             });

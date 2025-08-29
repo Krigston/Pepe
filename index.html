@@ -465,6 +465,47 @@
             60% { transform: translateY(-5px); }
         }
         
+        /* Специальные стили для Telegram */
+        .telegram-rotate-hint {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #0088cc 0%, #005577 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            color: white;
+            text-align: center;
+        }
+        
+        .telegram-hint-content {
+            padding: 40px;
+            max-width: 300px;
+        }
+        
+        .telegram-hint-content h3 {
+            font-size: 1.8rem;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+        
+        .telegram-hint-content p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            line-height: 1.4;
+        }
+        
+        .telegram-portrait-fix #gameContainer {
+            display: none;
+        }
+        
+        .telegram-landscape-ready #gameContainer {
+            display: block;
+        }
+        
         .modal-content {
             background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
             border: 3px solid #4CAF50;

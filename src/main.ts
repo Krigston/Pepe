@@ -118,6 +118,11 @@ class Main {
                 // Уведомляем Telegram что приложение готово
                 TelegramWebApp.ready();
                 return;
+            } else {
+                console.log('⚠️ Telegram API не сработал, применяем CSS адаптацию');
+                // Fallback: применяем CSS адаптацию для Telegram
+                this.applyTelegramCSSFix();
+                return;
             }
         }
         
@@ -138,6 +143,38 @@ class Main {
         });
         
         console.log('🎯 Адаптация ориентации настроена');
+    }
+    
+    private applyTelegramCSSFix(): void {
+        console.log('🔧 Применяем CSS fix для Telegram');
+        
+        const isPortrait = window.innerHeight > window.innerWidth;
+        if (isPortrait) {
+            // Добавляем специальный класс для Telegram
+            document.body.classList.add('telegram-portrait-fix');
+            
+            // Принудительно скрываем адресную строку в Telegram
+            if (window.scrollTo) {
+                window.scrollTo(0, 1);
+            }
+            
+            // Уведомляем пользователя что в Telegram лучше повернуть
+            const telegramMessage = document.createElement('div');
+            telegramMessage.className = 'telegram-rotate-hint';
+            telegramMessage.innerHTML = `
+                <div class="telegram-hint-content">
+                    <div style="font-size: 3rem; margin-bottom: 15px;">📱</div>
+                    <h3>Поверните устройство</h3>
+                    <p>Для лучшего опыта в Telegram<br>используйте горизонтальную ориентацию</p>
+                </div>
+            `;
+            document.body.appendChild(telegramMessage);
+            
+            console.log('💡 Показано уведомление о повороте для Telegram');
+        } else {
+            document.body.classList.add('telegram-landscape-ready');
+            console.log('✅ Telegram в горизонтальном режиме готов');
+        }
     }
     
     private showRotateMessage(): void {

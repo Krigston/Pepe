@@ -228,14 +228,14 @@ class Main {
         const progressBar = modal.querySelector('#progress-bar') as HTMLElement;
         const loadingText = modal.querySelector('#loading-text') as HTMLElement;
 
-        // Этап 1: Адаптация игры под устройство (25%)
+        // Этап 1: Настройка горизонтального режима (25%)
         progressBar.style.width = '25%';
-        loadingText.textContent = 'Адаптация игры под ваше устройство...';
+        loadingText.textContent = 'Настройка горизонтального режима...';
         await this.delay(800);
 
-        // Настраиваем игру под текущую ориентацию устройства
+        // Настраиваем игру как горизонтальную на мобильных
         this.forceGameLandscape();
-        console.log('✅ Игра адаптирована под устройство');
+        console.log('✅ Горизонтальный режим настроен');
 
         // Этап 2: Полноэкранный режим (50%)
         progressBar.style.width = '50%';
@@ -293,83 +293,65 @@ class Main {
     }
 
     private forceGameLandscape(): void {
-        console.log('🎮 Настройка игры под горизонтальный режим');
+        console.log('🎮 Настройка горизонтального режима для мобильных');
         
-        const isPortrait = window.innerHeight > window.innerWidth;
+        const isMobile = MobileUtils.isMobileDevice();
         
-        if (isPortrait) {
-            console.log('📱 Устройство в портретном режиме - адаптируем игру');
-            
-            // Просто показываем подсказку пользователю повернуть устройство
-            this.showRotateHint();
-            
-            // Адаптируем размеры игры под портретный экран
-            this.adaptGameForPortrait();
+        if (isMobile) {
+            // На мобильных всегда считаем, что пользователь держит телефон горизонтально
+            this.setupMobileLandscape();
         } else {
-            console.log('✅ Устройство в горизонтальном режиме - игра готова');
+            console.log('🖥️ Десктоп - оставляем как есть');
         }
     }
 
-    private showRotateHint(): void {
-        // Показываем красивую подсказку о повороте устройства
-        const hint = document.createElement('div');
-        hint.id = 'rotate-hint';
-        hint.style.cssText = `
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: linear-gradient(145deg, #4CAF50, #45a049);
-            color: white;
-            padding: 12px 20px;
-            border-radius: 25px;
-            font-size: 14px;
-            font-weight: bold;
-            z-index: 9999;
-            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
-            animation: pulse 2s infinite;
-        `;
-        hint.innerHTML = '📱 Поверните устройство для лучшего игрового опыта';
+    private setupMobileLandscape(): void {
+        console.log('📱 Настройка игры как для горизонтального телефона');
         
-        // Добавляем CSS анимацию
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes pulse {
-                0% { transform: translateX(-50%) scale(1); }
-                50% { transform: translateX(-50%) scale(1.05); }
-                100% { transform: translateX(-50%) scale(1); }
-            }
-        `;
-        document.head.appendChild(style);
+        // Получаем реальные размеры экрана
+        const realWidth = window.innerWidth;
+        const realHeight = window.innerHeight;
         
-        // Убираем старую подсказку и добавляем новую
-        const oldHint = document.getElementById('rotate-hint');
-        if (oldHint) oldHint.remove();
-        document.body.appendChild(hint);
+        // На мобильных меняем местами ширину и высоту - как будто телефон лежит
+        const gameWidth = Math.max(realWidth, realHeight);  // Берем большую сторону как ширину
+        const gameHeight = Math.min(realWidth, realHeight); // Берем меньшую сторону как высоту
         
-        // Автоматически убираем через 5 секунд
-        setTimeout(() => {
-            if (hint.parentNode) hint.remove();
-        }, 5000);
-    }
-
-    private adaptGameForPortrait(): void {
-        // Адаптируем игру для игры в портретном режиме (без поворотов)
+        console.log(`📱 Исходные размеры экрана: ${realWidth}x${realHeight}`);
+        console.log(`🎮 Размеры игры (горизонтальные): ${gameWidth}x${gameHeight}`);
+        
+        // Настраиваем canvas под горизонтальный режим
         const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
         if (canvas) {
-            // Делаем canvas адаптивным под портретный экран
-            canvas.style.width = '100vw';
-            canvas.style.height = '60vh'; // Оставляем место для UI
-            canvas.style.maxHeight = '600px';
+            // Логические размеры canvas (внутренние)
+            canvas.width = gameWidth;
+            canvas.height = gameHeight;
             
-            console.log('📱 Canvas адаптирован под портретный режим');
+            // Визуальные размеры (CSS) - растягиваем на весь экран
+            canvas.style.width = '100vw';
+            canvas.style.height = '100vh';
+            canvas.style.objectFit = 'contain'; // Сохраняем пропорции
+            
+            console.log(`🎨 Canvas: логические ${canvas.width}x${canvas.height}, визуальные 100vw x 100vh`);
         }
         
-        // Показываем мобильные элементы управления
+        // Скрываем все лишнее
+        const menu = document.getElementById('menu');
+        if (menu) {
+            menu.style.display = 'none';
+        }
+        
+        // Полноэкранный контейнер
         const gameContainer = document.getElementById('gameContainer');
         if (gameContainer) {
-            gameContainer.classList.add('portrait-mode');
+            gameContainer.style.width = '100vw';
+            gameContainer.style.height = '100vh';
+            gameContainer.style.position = 'fixed';
+            gameContainer.style.top = '0';
+            gameContainer.style.left = '0';
+            gameContainer.style.background = '#000';
         }
+        
+        console.log('✅ Игра настроена как горизонтальная на мобильном');
     }
     
 

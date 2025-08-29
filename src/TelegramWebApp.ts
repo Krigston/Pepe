@@ -64,12 +64,22 @@ export class TelegramWebApp {
             // Принудительно блокируем горизонтальную ориентацию
             if (this.tg.lockOrientation) {
                 try {
-                    this.tg.lockOrientation('landscape');
-                    console.log('🔒 Telegram: Ориентация заблокирована в горизонтальном режиме');
+                    // Пробуем разные варианты
+                    this.tg.lockOrientation('landscape-primary');
+                    console.log('🔒 Telegram: Ориентация заблокирована (landscape-primary)');
                     return true;
                 } catch (error) {
-                    console.log('⚠️ Ошибка lockOrientation:', error);
+                    console.log('⚠️ Ошибка lockOrientation landscape-primary:', error);
+                    try {
+                        this.tg.lockOrientation('landscape');
+                        console.log('🔒 Telegram: Ориентация заблокирована (landscape)');
+                        return true;
+                    } catch (error2) {
+                        console.log('⚠️ Ошибка lockOrientation landscape:', error2);
+                    }
                 }
+            } else {
+                console.log('❌ lockOrientation недоступен');
             }
 
             // Расширяем приложение на весь экран для лучшего игрового опыта
@@ -156,14 +166,21 @@ export class TelegramWebApp {
 
     static lockLandscapeOrientation(): void {
         if (!this.tg || !this.tg.lockOrientation) {
+            console.log('❌ lockOrientation недоступен в lockLandscapeOrientation');
             return;
         }
 
         try {
-            this.tg.lockOrientation('landscape');
-            console.log('🔒 Принудительная блокировка горизонтальной ориентации');
+            this.tg.lockOrientation('landscape-primary');
+            console.log('🔒 Принудительная блокировка (landscape-primary)');
         } catch (error) {
-            console.log('⚠️ Ошибка принудительной блокировки ориентации:', error);
+            console.log('⚠️ Ошибка landscape-primary:', error);
+            try {
+                this.tg.lockOrientation('landscape');
+                console.log('🔒 Принудительная блокировка (landscape)');
+            } catch (error2) {
+                console.log('⚠️ Ошибка landscape:', error2);
+            }
         }
     }
 

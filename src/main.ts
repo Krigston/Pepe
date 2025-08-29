@@ -2,6 +2,7 @@ import { Game } from './Game';
 import { InputManager } from './InputManager';
 import { AudioManager } from './AudioManager';
 import { MobileUtils } from './MobileUtils';
+import { VersionManager } from './VersionManager';
 
 class Main {
     private game: Game;
@@ -14,6 +15,7 @@ class Main {
         this.game = new Game(this.inputManager, this.audioManager);
         
         this.initializeMobileSupport();
+        this.initializeVersionDisplay();
         this.initializeUI();
         this.startGameLoop();
     }
@@ -126,6 +128,20 @@ class Main {
         };
         
         document.addEventListener('touchstart', enterFullscreen, { once: true });
+    }
+    
+    private initializeVersionDisplay(): void {
+        const versionIndicator = document.getElementById('versionIndicator');
+        if (versionIndicator) {
+            const buildInfo = VersionManager.getBuildInfo();
+            versionIndicator.textContent = VersionManager.getFormattedVersion();
+            
+            // Добавляем tooltip с дополнительной информацией
+            versionIndicator.title = `Версия: ${buildInfo.version}\nСборка: ${buildInfo.buildDate}`;
+            
+            console.log(`🎮 Игра запущена - ${VersionManager.getFormattedVersion()}`);
+            console.log('Build Info:', buildInfo);
+        }
     }
 
     private initializeUI(): void {

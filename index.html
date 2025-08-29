@@ -293,6 +293,40 @@
                 height: 70px;
             }
         }
+        
+        /* Индикатор версии */
+        #versionIndicator {
+            position: fixed;
+            bottom: 5px;
+            right: 5px;
+            color: rgba(255, 255, 255, 0.4);
+            font-family: 'Courier New', monospace;
+            font-size: 10px;
+            font-weight: normal;
+            z-index: 5;
+            pointer-events: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        
+        /* Адаптация версии для мобильных */
+        @media screen and (max-width: 768px) {
+            #versionIndicator {
+                font-size: 8px;
+                bottom: 3px;
+                right: 3px;
+                color: rgba(255, 255, 255, 0.3);
+            }
+        }
+        
+        /* Версия в горизонтальном режиме мобильных */
+        @media screen and (max-width: 812px) and (orientation: landscape) {
+            #versionIndicator {
+                bottom: 2px;
+                right: 2px;
+                font-size: 7px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -311,6 +345,9 @@
             <button id="instructionsBtn">Инструкции</button>
         </div>
     </div>
+    
+    <!-- Индикатор версии -->
+    <div id="versionIndicator"></div>
     <script type="module" src="/src/main.ts"></script>
     
     <!-- Простой тест клавиатуры -->

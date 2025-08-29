@@ -115,6 +115,9 @@ class Main {
                 console.log('✅ Telegram: Горизонтальная ориентация установлена');
                 document.body.classList.add('landscape-ready');
                 
+                // Настраиваем постоянный контроль ориентации
+                TelegramWebApp.setupOrientationControl();
+                
                 // Уведомляем Telegram что приложение готово
                 TelegramWebApp.ready();
                 return;

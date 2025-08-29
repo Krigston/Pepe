@@ -21,7 +21,14 @@ class Main {
     }
     
     private initializeMobileSupport(): void {
-        if (MobileUtils.isMobileDevice()) {
+        const isMobile = MobileUtils.isMobileDevice();
+        console.log(`🔍 Проверка устройства - isMobile: ${isMobile}`);
+        console.log(`📱 Размер экрана: ${window.innerWidth}x${window.innerHeight}`);
+        console.log(`👆 Поддержка тач: ${'ontouchstart' in window}`);
+        console.log(`🖱️ maxTouchPoints: ${navigator.maxTouchPoints}`);
+        console.log(`🌐 User Agent: ${navigator.userAgent}`);
+        
+        if (isMobile) {
             console.log('🔥 Мобильное устройство обнаружено - ПРИНУДИТЕЛЬНАЯ горизонтальная ориентация!');
             
             // Максимально агрессивная блокировка горизонтальной ориентации
@@ -40,6 +47,8 @@ class Main {
             this.inputManager.showMobileControls();
             
             console.log('💪 Мобильная версия инициализирована с ПРИНУДИТЕЛЬНОЙ горизонтальной ориентацией');
+        } else {
+            console.log('🖥️ Десктопное устройство - мобильные функции отключены');
         }
     }
     

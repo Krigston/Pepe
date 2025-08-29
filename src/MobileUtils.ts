@@ -1,7 +1,28 @@
 export class MobileUtils {
     static isMobileDevice(): boolean {
-        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-               (typeof navigator.maxTouchPoints === 'number' && navigator.maxTouchPoints > 2);
+        // Расширенная проверка мобильных устройств
+        const userAgent = navigator.userAgent.toLowerCase();
+        const isMobileUA = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile|phone|tablet/i.test(userAgent);
+        const hasTouchPoints = typeof navigator.maxTouchPoints === 'number' && navigator.maxTouchPoints > 0;
+        const hasTouchStart = 'ontouchstart' in window;
+        const isSmallScreen = window.innerWidth <= 1024 || window.innerHeight <= 1024; // Увеличенный порог
+        const isPortraitAspect = window.innerHeight > window.innerWidth;
+        
+        const result = isMobileUA || hasTouchPoints || hasTouchStart || (isSmallScreen && hasTouchStart);
+        
+        console.log('🔍 Проверка мобильного устройства:', {
+            userAgent: userAgent,
+            isMobileUA: isMobileUA,
+            hasTouchPoints: hasTouchPoints,
+            maxTouchPoints: navigator.maxTouchPoints,
+            hasTouchStart: hasTouchStart,
+            screenSize: { width: window.innerWidth, height: window.innerHeight },
+            isSmallScreen: isSmallScreen,
+            isPortraitAspect: isPortraitAspect,
+            finalResult: result
+        });
+        
+        return result;
     }
     
     static isLandscape(): boolean {

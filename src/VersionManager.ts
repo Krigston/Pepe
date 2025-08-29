@@ -1,6 +1,6 @@
 export class VersionManager {
     // Версия из package.json (будет обновляться автоматически)
-    public static readonly CURRENT_VERSION = '1.3.38';
+    public static readonly CURRENT_VERSION = '1.3.39';
     
     public static getVersion(): string {
         return this.CURRENT_VERSION;

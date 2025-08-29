@@ -24,6 +24,10 @@ class Main {
         this.initializeMobileSupport();
         this.initializeVersionDisplay();
         this.initializeUI();
+        
+        // Сразу показываем модальное окно при загрузке
+        this.showGamePrepModal();
+        
         this.startGameLoop();
     }
     
@@ -150,12 +154,12 @@ class Main {
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.95);
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 10000;
-            backdrop-filter: blur(5px);
+            z-index: 99999;
+            backdrop-filter: blur(10px);
         `;
 
         const modalContent = document.createElement('div');
@@ -231,15 +235,23 @@ class Main {
 
         // Применяем настройки ориентации
         try {
-            if (TelegramWebApp.isTelegramWebApp()) {
-                // Пробуем Screen Orientation API
-                if ((screen as any).orientation && (screen as any).orientation.lock) {
-                    await (screen as any).orientation.lock('landscape');
-                    console.log('✅ Ориентация заблокирована');
-                }
+            // Пробуем Screen Orientation API (работает только с пользовательским взаимодействием)
+            if ((screen as any).orientation && (screen as any).orientation.lock) {
+                await (screen as any).orientation.lock('landscape');
+                console.log('✅ Screen Orientation API: Ориентация заблокирована в landscape');
+            } else if ((screen as any).lockOrientation) {
+                // Fallback для старых браузеров
+                (screen as any).lockOrientation('landscape');
+                console.log('✅ Legacy API: Ориентация заблокирована в landscape');
+            } else if ((screen as any).mozLockOrientation) {
+                // Firefox fallback
+                (screen as any).mozLockOrientation('landscape');
+                console.log('✅ Firefox API: Ориентация заблокирована в landscape');
+            } else {
+                console.log('⚠️ Screen Orientation API не поддерживается на этом устройстве');
             }
         } catch (error) {
-            console.log('⚠️ Блокировка ориентации не поддерживается');
+            console.log('⚠️ Ошибка блокировки ориентации:', error);
         }
 
         // Этап 2: Полноэкранный режим (50%)
@@ -249,13 +261,24 @@ class Main {
 
         // Пробуем полноэкранный режим
         try {
-            const gameContainer = document.getElementById('gameContainer');
-            if (gameContainer && gameContainer.requestFullscreen) {
-                await gameContainer.requestFullscreen();
-                console.log('✅ Полноэкранный режим активирован');
+            // Попробуем полноэкранный режим для всего документа
+            if (document.documentElement.requestFullscreen) {
+                await document.documentElement.requestFullscreen();
+                console.log('✅ Полноэкранный режим активирован для документа');
+            } else if ((document.documentElement as any).webkitRequestFullscreen) {
+                await (document.documentElement as any).webkitRequestFullscreen();
+                console.log('✅ WebKit полноэкранный режим активирован');
+            } else if ((document.documentElement as any).mozRequestFullScreen) {
+                await (document.documentElement as any).mozRequestFullScreen();
+                console.log('✅ Mozilla полноэкранный режим активирован');
+            } else if ((document.documentElement as any).msRequestFullscreen) {
+                await (document.documentElement as any).msRequestFullscreen();
+                console.log('✅ MS полноэкранный режим активирован');
+            } else {
+                console.log('⚠️ Полноэкранный режим не поддерживается');
             }
         } catch (error) {
-            console.log('⚠️ Полноэкранный режим не поддерживается');
+            console.log('⚠️ Ошибка активации полноэкранного режима:', error);
         }
 
         // Этап 3: Адаптация интерфейса (75%)
@@ -362,8 +385,10 @@ class Main {
 
         if (startBtn) {
             startBtn.addEventListener('click', async () => {
-                // Показываем модальное окно подготовки к игре
-                this.showGamePrepModal();
+                // Напрямую запускаем игру (модалка уже показана при загрузке)
+                this.game.start();
+                const menu = document.getElementById('menu');
+                if (menu) menu.classList.add('hidden');
             });
         }
 

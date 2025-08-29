@@ -159,7 +159,7 @@ class Main {
             }
             
             /* Поворачиваем весь контент на 90 градусов */
-            body.telegram-forced-landscape #app {
+            body.telegram-forced-landscape #gameContainer {
                 transform: rotate(90deg) translateY(-100%);
                 transform-origin: top left;
                 width: 100vh;

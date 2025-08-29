@@ -57,29 +57,17 @@ export class Game {
     private setupResponsiveCanvas(): void {
         const resizeCanvas = () => {
             if (MobileUtils.isMobileDevice()) {
-                let screenWidth = window.innerWidth;
-                let screenHeight = window.innerHeight;
+                // Простое использование размеров экрана как есть
+                const screenWidth = window.innerWidth;
+                const screenHeight = window.innerHeight;
                 
-                // Если экран в портретном режиме, CSS поворачивает его на 90°
-                // поэтому для canvas нужно поменять размеры местами
-                if (!MobileUtils.isLandscape()) {
-                    // В портретном режиме: ширина canvas = высота экрана, высота canvas = ширина экрана
-                    this.canvas.width = screenHeight;
-                    this.canvas.height = screenWidth;
-                    
-                    // CSS размеры устанавливаются в vh/vw для повернутого экрана
-                    this.canvas.style.width = '100vh';
-                    this.canvas.style.height = '100vw';
-                } else {
-                    // В ландшафтном режиме используем обычные размеры
-                    this.canvas.width = screenWidth;
-                    this.canvas.height = screenHeight;
-                    
-                    this.canvas.style.width = '100vw';
-                    this.canvas.style.height = '100vh';
-                }
+                this.canvas.width = screenWidth;
+                this.canvas.height = screenHeight;
                 
-                console.log(`Mobile canvas: ${this.canvas.width}x${this.canvas.height} (screen: ${screenWidth}x${screenHeight}, ${MobileUtils.isLandscape() ? 'landscape' : 'portrait -> rotated'})`);
+                this.canvas.style.width = '100vw';
+                this.canvas.style.height = '100vh';
+                
+                console.log(`Mobile canvas: ${screenWidth}x${screenHeight} (${MobileUtils.isLandscape() ? 'landscape' : 'portrait'})`);
             } else {
                 // На десктопе используем стандартные размеры
                 this.canvas.width = 800;

@@ -32,11 +32,14 @@ class Main {
         if (isMobile) {
             console.log('🔥 Мобильное устройство обнаружено!');
             
+            // Показываем заглушку загрузки
+            this.showLoadingSplash();
+            
             // Отключаем зум
             this.disableMobileZoom();
             
-            // Пытаемся заблокировать ориентацию при первом взаимодействии пользователя
-            this.setupOrientationLock();
+            // Автоматический поворот экрана под заглушкой
+            this.setupAutoRotation();
             
             // Показываем мобильные элементы управления
             this.inputManager.showMobileControls();
@@ -47,54 +50,88 @@ class Main {
         }
     }
     
-    private setupOrientationLock(): void {
-        // Пытаемся заблокировать ориентацию немедленно при загрузке
-        const tryLockOrientation = async () => {
-            const success = await MobileUtils.lockToLandscape();
-            if (success) {
-                console.log('🚀 Автоповорот активирован автоматически!');
-                return true;
+    private showLoadingSplash(): void {
+        const splash = document.createElement('div');
+        splash.id = 'loadingSplash';
+        splash.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            color: white;
+            font-family: Arial, sans-serif;
+        `;
+        
+        splash.innerHTML = `
+            <div style="font-size: 48px; margin-bottom: 20px;">🐸</div>
+            <div style="font-size: 24px; font-weight: bold; margin-bottom: 10px;">Пепе: Легендарное Приключение</div>
+            <div style="font-size: 16px; opacity: 0.8;">Загрузка игры...</div>
+            <div style="margin-top: 20px; width: 200px; height: 4px; background: rgba(255,255,255,0.3); border-radius: 2px; overflow: hidden;">
+                <div style="width: 100%; height: 100%; background: white; animation: loadingBar 1s ease-in-out;"></div>
+            </div>
+        `;
+        
+        // Добавляем CSS анимацию
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes loadingBar {
+                0% { transform: translateX(-100%); }
+                100% { transform: translateX(0); }
             }
-            return false;
-        };
+        `;
+        document.head.appendChild(style);
         
-        // Множественные попытки блокировки без участия пользователя
-        const attemptLock = async () => {
-            // Попытка 1: Сразу при загрузке
-            let success = await tryLockOrientation();
-            if (success) return;
-            
-            // Попытка 2: После небольшой задержки
-            setTimeout(async () => {
-                success = await tryLockOrientation();
-                if (success) return;
-                
-                // Попытка 3: При фокусе на window
-                const onFocus = async () => {
-                    const focused = await tryLockOrientation();
-                    if (focused) {
-                        window.removeEventListener('focus', onFocus);
-                    }
-                };
-                window.addEventListener('focus', onFocus);
-                
-                // Попытка 4: При visibility change
-                const onVisibilityChange = async () => {
-                    if (!document.hidden) {
-                        const visible = await tryLockOrientation();
-                        if (visible) {
-                            document.removeEventListener('visibilitychange', onVisibilityChange);
-                        }
-                    }
-                };
-                document.addEventListener('visibilitychange', onVisibilityChange);
-                
-                console.log('📱 Автоповорот будет активирован при возможности');
-            }, 500);
-        };
+        document.body.appendChild(splash);
         
-        attemptLock();
+        // Убираем заглушку через 1 секунду
+        setTimeout(() => {
+            splash.remove();
+        }, 1000);
     }
+    
+    private setupAutoRotation(): void {
+        // Имитируем пользовательское взаимодействие для активации Screen Orientation API
+        const triggerRotation = () => {
+            // Создаем невидимую кнопку и автоматически "нажимаем" её
+            const hiddenButton = document.createElement('button');
+            hiddenButton.style.cssText = `
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+                width: 1px;
+                height: 1px;
+                opacity: 0;
+                pointer-events: none;
+            `;
+            
+            hiddenButton.addEventListener('click', async () => {
+                const success = await MobileUtils.lockToLandscape();
+                if (success) {
+                    console.log('🎯 Автоповорот активирован скрыто!');
+                }
+                hiddenButton.remove();
+            });
+            
+            document.body.appendChild(hiddenButton);
+            
+            // Имитируем клик
+            setTimeout(() => {
+                hiddenButton.click();
+            }, 100);
+        };
+        
+        // Запускаем попытку поворота под заглушкой
+        setTimeout(triggerRotation, 200);
+    }
+    
+
     
 
     

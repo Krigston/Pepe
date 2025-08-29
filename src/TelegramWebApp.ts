@@ -64,49 +64,46 @@ export class TelegramWebApp {
             console.log('📱 Платформа:', this.tg.platform);
             console.log('📱 Версия Telegram:', this.tg.version);
             
-            // 1. Сначала расширяем приложение на весь экран
-            if (this.tg.expand) {
-                this.tg.expand();
-                console.log('📺 Telegram: expand() выполнен');
-            }
+            // 1. Используем стандартный Web API для блокировки ориентации
+            await this.lockScreenOrientation();
 
-            // 2. Пробуем полноэкранный режим
+            // 2. Telegram Web App API 2.0 - полноэкранный режим
             if (this.tg.requestFullscreen) {
                 try {
                     await this.tg.requestFullscreen();
-                    console.log('📺 Telegram: Полноэкранный режим активирован');
+                    console.log('📺 Telegram: Полноэкранный режим активирован (API 2.0)');
                 } catch (error) {
                     console.log('⚠️ Ошибка requestFullscreen:', error);
                 }
             }
 
-            // 3. Устанавливаем viewport для горизонтального режима
-            if (this.tg.setViewportHeight) {
-                try {
-                    this.tg.setViewportHeight(false); // Отключаем автоматическую высоту
-                    console.log('📱 Telegram: setViewportHeight(false)');
-                } catch (error) {
-                    console.log('⚠️ Ошибка setViewportHeight:', error);
-                }
+            // 3. Расширяем приложение на весь экран
+            if (this.tg.expand) {
+                this.tg.expand();
+                console.log('📺 Telegram: expand() выполнен');
             }
 
-            // 4. Пробуем блокировку ориентации (если доступна)
+            // 4. Telegram lockOrientation (fallback)
             if (this.tg.lockOrientation && ['ios', 'android'].includes(this.tg.platform)) {
                 try {
-                    this.tg.lockOrientation('landscape-primary');
-                    console.log('🔒 Telegram: Ориентация заблокирована (landscape-primary)');
+                    this.tg.lockOrientation('landscape');
+                    console.log('🔒 Telegram: lockOrientation(landscape)');
                 } catch (error) {
-                    console.log('⚠️ Ошибка lockOrientation:', error);
+                    console.log('⚠️ Ошибка Telegram lockOrientation:', error);
                 }
             }
 
-            // 5. Включаем подтверждение закрытия
+            // 5. Настройки для игрового режима
+            if (this.tg.setViewportHeight) {
+                this.tg.setViewportHeight(false);
+                console.log('📱 Telegram: setViewportHeight(false)');
+            }
+
             if (this.tg.enableClosingConfirmation) {
                 this.tg.enableClosingConfirmation();
                 console.log('✅ Telegram: Включено подтверждение закрытия');
             }
 
-            // 6. Устанавливаем цвет фона для полноэкранного режима
             if (this.tg.setBackgroundColor) {
                 this.tg.setBackgroundColor('#667eea');
                 console.log('🎨 Telegram: Установлен цвет фона');
@@ -115,6 +112,44 @@ export class TelegramWebApp {
             return true;
         } catch (error) {
             console.log('❌ Общая ошибка Telegram WebApp:', error);
+            return false;
+        }
+    }
+
+    // Стандартный Web API для блокировки ориентации
+    static async lockScreenOrientation(): Promise<boolean> {
+        try {
+            // Современный стандартный API
+            if (screen.orientation && screen.orientation.lock) {
+                await screen.orientation.lock('landscape');
+                console.log('🔒 Стандартный API: screen.orientation.lock(landscape)');
+                return true;
+            }
+
+            // Fallback для старых браузеров
+            const screen_any = screen as any;
+            if (screen_any.lockOrientation) {
+                const result = screen_any.lockOrientation('landscape');
+                console.log('🔒 Legacy API: screen.lockOrientation(landscape)');
+                return result;
+            }
+
+            if (screen_any.mozLockOrientation) {
+                const result = screen_any.mozLockOrientation('landscape');
+                console.log('🔒 Mozilla API: screen.mozLockOrientation(landscape)');
+                return result;
+            }
+
+            if (screen_any.msLockOrientation) {
+                const result = screen_any.msLockOrientation('landscape');
+                console.log('🔒 Microsoft API: screen.msLockOrientation(landscape)');
+                return result;
+            }
+
+            console.log('❌ Screen Orientation API недоступен');
+            return false;
+        } catch (error) {
+            console.log('⚠️ Ошибка блокировки ориентации через Web API:', error);
             return false;
         }
     }

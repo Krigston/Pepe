@@ -19,6 +19,7 @@
             align-items: center;
             min-height: 100vh;
             overflow: hidden;
+            position: relative;
         }
         
         #gameContainer {
@@ -26,6 +27,8 @@
             border: 3px solid #333;
             border-radius: 10px;
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            max-width: 100vw;
+            max-height: 100vh;
         }
         
         #gameCanvas {
@@ -84,6 +87,211 @@
         
         .hidden {
             display: none !important;
+        }
+        
+        /* Мобильные стили */
+        .mobile-controls {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 15;
+            display: none;
+        }
+        
+        .mobile-button {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            line-height: 1;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            pointer-events: auto;
+            transition: all 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .mobile-button:active,
+        .mobile-button.pressed {
+            background: rgba(255, 255, 255, 0.4);
+            border-color: rgba(255, 255, 255, 0.9);
+            transform: scale(0.95);
+        }
+        
+        .dpad-container {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            width: 150px;
+            height: 120px;
+        }
+        
+        .dpad-left {
+            width: 60px;
+            height: 60px;
+            bottom: 30px;
+            left: 0;
+        }
+        
+        .dpad-right {
+            width: 60px;
+            height: 60px;
+            bottom: 30px;
+            right: 0;
+        }
+        
+        .dpad-up {
+            width: 60px;
+            height: 60px;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .actions-container {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 160px;
+            height: 80px;
+        }
+        
+        .action-jump {
+            width: 70px;
+            height: 70px;
+            bottom: 0;
+            right: 80px;
+            border-radius: 50%;
+        }
+        
+        .action-interact {
+            width: 60px;
+            height: 60px;
+            bottom: 5px;
+            right: 0;
+            border-radius: 50%;
+        }
+        
+        /* Мобильные медиа-запросы */
+        @media screen and (max-width: 768px) {
+            body {
+                overflow: hidden;
+            }
+            
+            #gameContainer {
+                border: none;
+                border-radius: 0;
+                box-shadow: none;
+                width: 100vw;
+                height: 100vh;
+            }
+            
+            #gameCanvas {
+                width: 100vw;
+                height: 100vh;
+            }
+            
+            #ui {
+                font-size: 16px;
+                top: 5px;
+                left: 5px;
+            }
+            
+            #menu {
+                width: 90vw;
+                max-width: 400px;
+            }
+            
+            #menu h1 {
+                font-size: 2em;
+            }
+            
+            #menu button {
+                padding: 12px 25px;
+                font-size: 16px;
+            }
+        }
+        
+        /* Горизонтальная ориентация мобильных устройств */
+        @media screen and (max-width: 812px) and (orientation: landscape) {
+            #ui {
+                font-size: 14px;
+                top: 3px;
+                left: 3px;
+            }
+            
+            .dpad-container {
+                bottom: 10px;
+                left: 10px;
+                width: 130px;
+                height: 100px;
+            }
+            
+            .dpad-left, .dpad-right, .dpad-up {
+                width: 50px;
+                height: 50px;
+            }
+            
+            .actions-container {
+                bottom: 10px;
+                right: 10px;
+                width: 140px;
+                height: 70px;
+            }
+            
+            .action-jump {
+                width: 60px;
+                height: 60px;
+                right: 70px;
+            }
+            
+            .action-interact {
+                width: 50px;
+                height: 50px;
+            }
+        }
+        
+        /* Планшеты */
+        @media screen and (min-width: 768px) and (max-width: 1024px) {
+            .mobile-button {
+                font-size: 24px;
+            }
+            
+            .dpad-container {
+                width: 180px;
+                height: 140px;
+            }
+            
+            .dpad-left, .dpad-right, .dpad-up {
+                width: 70px;
+                height: 70px;
+            }
+            
+            .actions-container {
+                width: 180px;
+                height: 90px;
+            }
+            
+            .action-jump {
+                width: 80px;
+                height: 80px;
+                right: 90px;
+            }
+            
+            .action-interact {
+                width: 70px;
+                height: 70px;
+            }
         }
     </style>
 </head>

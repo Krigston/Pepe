@@ -1,8 +1,9 @@
 {
   "name": "pepe-game",
-  "version": "1.0.0",
-  "description": "Легендарная игра про Пепе",
+  "version": "1.1.0",
+  "description": "Легендарная игра про Пепе с поддержкой мобильных устройств",
   "main": "index.html",
+  "keywords": ["game", "platformer", "mobile", "pepe", "meme", "typescript"],
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",

@@ -1,9 +1,18 @@
+import { MobileControls } from './MobileControls';
+import { MobileUtils } from './MobileUtils';
+
 export class InputManager {
     private keys: { [key: string]: boolean } = {};
     private previousKeys: { [key: string]: boolean } = {};
+    private mobileControls: MobileControls | null = null;
 
     constructor() {
         this.setupEventListeners();
+        
+        // Инициализируем мобильные элементы управления только на мобильных устройствах
+        if (MobileUtils.isMobileDevice()) {
+            this.mobileControls = new MobileControls();
+        }
     }
 
     private setupEventListeners(): void {
@@ -46,11 +55,15 @@ export class InputManager {
     }
 
     public isKeyPressed(keyCode: string): boolean {
-        return this.keys[keyCode] || false;
+        const keyboardPressed = this.keys[keyCode] || false;
+        const mobilePressed = this.mobileControls ? this.mobileControls.isKeyPressed(keyCode) : false;
+        return keyboardPressed || mobilePressed;
     }
 
     public isKeyJustPressed(keyCode: string): boolean {
-        return this.keys[keyCode] && !this.previousKeys[keyCode];
+        const keyboardJustPressed = this.keys[keyCode] && !this.previousKeys[keyCode];
+        const mobileJustPressed = this.mobileControls ? this.mobileControls.isKeyJustPressed(keyCode) : false;
+        return keyboardJustPressed || mobileJustPressed;
     }
 
     // Добавляем альтернативный метод для прыжка
@@ -60,7 +73,10 @@ export class InputManager {
         const upPressed = this.keys['ArrowUp'] && !this.previousKeys['ArrowUp'];
         const wPressed = this.keys['KeyW'] && !this.previousKeys['KeyW'];
         
-        const result = spacePressed || upPressed || wPressed;
+        // Проверяем мобильные элементы управления
+        const mobileJumpPressed = this.mobileControls ? this.mobileControls.isJumpPressed() : false;
+        
+        const result = spacePressed || upPressed || wPressed || mobileJumpPressed;
         if (result) {
             console.log('Прыжок нажат!');
         }
@@ -69,6 +85,11 @@ export class InputManager {
 
     public update(): void {
         this.previousKeys = { ...this.keys };
+        
+        // Обновляем мобильные элементы управления
+        if (this.mobileControls) {
+            this.mobileControls.update();
+        }
     }
 
     // Удобные методы для игрового ввода
@@ -89,7 +110,10 @@ export class InputManager {
 
 
     public isInteractPressed(): boolean {
-        const interactPressed = this.isKeyJustPressed('KeyE');
+        const keyboardInteract = this.isKeyJustPressed('KeyE');
+        const mobileInteract = this.mobileControls ? this.mobileControls.isInteractPressed() : false;
+        const interactPressed = keyboardInteract || mobileInteract;
+        
         if (interactPressed) {
             console.log('Взаимодействие нажато!');
         }
@@ -99,5 +123,29 @@ export class InputManager {
     // Добавляем метод для отладки
     public getPressedKeys(): string[] {
         return Object.keys(this.keys).filter(key => this.keys[key]);
+    }
+    
+    // Методы для работы с мобильными элементами управления
+    public showMobileControls(): void {
+        if (this.mobileControls) {
+            this.mobileControls.show();
+        }
+    }
+    
+    public hideMobileControls(): void {
+        if (this.mobileControls) {
+            this.mobileControls.hide();
+        }
+    }
+    
+    public isMobile(): boolean {
+        return this.mobileControls !== null;
+    }
+    
+    public destroy(): void {
+        if (this.mobileControls) {
+            this.mobileControls.destroy();
+            this.mobileControls = null;
+        }
     }
 } 

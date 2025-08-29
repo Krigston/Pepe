@@ -38,8 +38,8 @@ class Main {
             // Отключаем зум
             this.disableMobileZoom();
             
-            // Умная адаптация под портретный режим
-            this.adaptPortraitMode();
+            // Просто адаптируем игру под любую ориентацию
+            this.setupOrientationAdaptation();
             
             // Показываем мобильные элементы управления
             this.inputManager.showMobileControls();
@@ -96,56 +96,45 @@ class Main {
         }, 1000);
     }
     
-    private adaptPortraitMode(): void {
-        // Если устройство в портретном режиме - адаптируем игру под горизонтальное отображение
+    private setupOrientationAdaptation(): void {
         const isPortrait = window.innerHeight > window.innerWidth;
         
         if (isPortrait) {
-            console.log('📱 Портретный режим обнаружен - применяем умную адаптацию');
-            
-            // Применяем CSS классы для умного поворота
-            document.body.classList.add('portrait-adapted');
-            
-            // Настраиваем canvas для портретного режима с горизонтальным контентом
-            const canvas = document.querySelector('#gameCanvas') as HTMLCanvasElement;
-            if (canvas) {
-                canvas.style.transform = 'rotate(90deg)';
-                canvas.style.transformOrigin = 'center center';
-                canvas.style.width = '100vh';
-                canvas.style.height = '100vw';
-                canvas.style.position = 'fixed';
-                canvas.style.top = '50%';
-                canvas.style.left = '50%';
-                canvas.style.marginTop = '-50vw';
-                canvas.style.marginLeft = '-50vh';
-            }
-            
-            // Поворачиваем мобильные контролы
-            const mobileControls = document.querySelector('.mobile-controls') as HTMLElement;
-            if (mobileControls) {
-                mobileControls.style.transform = 'rotate(90deg)';
-                mobileControls.style.transformOrigin = 'center center';
-                mobileControls.style.width = '100vh';
-                mobileControls.style.height = '100vw';
-                mobileControls.style.position = 'fixed';
-                mobileControls.style.top = '50%';
-                mobileControls.style.left = '50%';
-                mobileControls.style.marginTop = '-50vw';
-                mobileControls.style.marginLeft = '-50vh';
-            }
+            console.log('📱 Портретный режим - показываем сообщение о повороте');
+            this.showRotateMessage();
         } else {
-            console.log('🖥️ Горизонтальный режим - используем стандартное отображение');
-            document.body.classList.add('landscape-mode');
+            console.log('🖥️ Горизонтальный режим - игра готова');
+            document.body.classList.add('landscape-ready');
         }
         
         // Отслеживаем изменения ориентации
         window.addEventListener('orientationchange', () => {
             setTimeout(() => {
-                location.reload(); // Перезагружаем для корректной адаптации
+                location.reload();
             }, 100);
         });
         
-        console.log('🎯 Умная адаптация ориентации настроена');
+        console.log('🎯 Адаптация ориентации настроена');
+    }
+    
+    private showRotateMessage(): void {
+        const message = document.createElement('div');
+        message.className = 'rotate-message';
+        message.innerHTML = `
+            <div class="rotate-content">
+                <div class="rotate-icon">📱➡️📱</div>
+                <h2>Поверните устройство</h2>
+                <p>Для лучшего игрового опыта<br>используйте горизонтальную ориентацию</p>
+            </div>
+        `;
+        
+        document.body.appendChild(message);
+        
+        // Скрываем игровой контент
+        const gameContainer = document.querySelector('#gameContainer') as HTMLElement;
+        if (gameContainer) {
+            gameContainer.style.display = 'none';
+        }
     }
     
 

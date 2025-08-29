@@ -417,18 +417,49 @@
             50% { opacity: 1; transform: translateX(-50%) scale(1.05); }
         }
         
-        /* Умная адаптация ориентации */
-        .portrait-adapted {
-            overflow: hidden;
-        }
-        
-        .portrait-adapted #gameContainer {
-            overflow: visible;
-        }
-        
-        .landscape-mode #gameCanvas {
+        /* Сообщение о повороте устройства */
+        .rotate-message {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100vw;
             height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            color: white;
+            text-align: center;
+        }
+        
+        .rotate-content {
+            padding: 40px;
+            max-width: 300px;
+        }
+        
+        .rotate-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            animation: bounce 2s infinite;
+        }
+        
+        .rotate-content h2 {
+            font-size: 1.8rem;
+            margin: 20px 0 15px 0;
+            font-weight: bold;
+        }
+        
+        .rotate-content p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            line-height: 1.4;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
         }
         
         .modal-content {

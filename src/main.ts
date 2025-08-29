@@ -24,9 +24,6 @@ class Main {
         if (MobileUtils.isMobileDevice()) {
             console.log('Мобильное устройство обнаружено');
             
-            // Принудительно переходим в горизонтальную ориентацию
-            this.encourageLandscapeMode();
-            
             // Отключаем зум
             this.disableMobileZoom();
             
@@ -35,56 +32,7 @@ class Main {
         }
     }
     
-    private encourageLandscapeMode(): void {
-        // Показываем сообщение о повороте экрана
-        const orientationMessage = document.createElement('div');
-        orientationMessage.id = 'orientationMessage';
-        orientationMessage.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0,0,0,0.9);
-            color: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 20px;
-        `;
-        
-        orientationMessage.innerHTML = `
-            <div style="font-size: 24px; margin-bottom: 20px;">📱➡️📱</div>
-            <div style="font-size: 18px; margin-bottom: 10px;">Поверните устройство</div>
-            <div style="font-size: 14px;">для лучшего игрового опыта</div>
-        `;
-        
-        const checkOrientation = () => {
-            if (MobileUtils.isLandscape() || window.innerWidth > 768) {
-                if (orientationMessage.parentNode) {
-                    orientationMessage.parentNode.removeChild(orientationMessage);
-                }
-            } else {
-                if (!orientationMessage.parentNode) {
-                    document.body.appendChild(orientationMessage);
-                }
-            }
-        };
-        
-        // Проверяем при загрузке
-        setTimeout(checkOrientation, 100);
-        
-        // Слушаем изменения ориентации
-        window.addEventListener('orientationchange', () => {
-            setTimeout(checkOrientation, 500);
-        });
-        
-        window.addEventListener('resize', checkOrientation);
-    }
+
     
     private disableMobileZoom(): void {
         // Обновляем viewport meta tag

@@ -26,34 +26,48 @@
             position: relative;
         }
         
-        /* Принудительная горизонтальная ориентация для мобильных */
+        /* Принудительная горизонтальная ориентация для мобильных устройств */
         @media screen and (max-width: 768px) and (orientation: portrait) {
-            body::before {
-                content: "";
+            html {
+                transform: rotate(90deg);
+                transform-origin: center center;
+                width: 100vh;
+                height: 100vw;
+                overflow: hidden;
                 position: fixed;
                 top: 0;
                 left: 0;
-                width: 100vw;
-                height: 100vh;
-                background: rgba(0,0,0,0.95);
-                z-index: 10000;
+            }
+            
+            body {
+                width: 100vh;
+                height: 100vw;
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+                transform: none;
+            }
+            
+            #gameContainer {
+                width: 100vh !important;
+                height: 100vw !important;
+                border: none;
+                border-radius: 0;
+                box-shadow: none;
+                position: relative;
+                top: 0;
+                left: 0;
+                transform: none;
                 display: flex;
                 align-items: center;
                 justify-content: center;
             }
             
-            body::after {
-                content: "📱➡️📱\\A Поверните устройство\\A для игры";
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                color: white;
-                font-size: 18px;
-                text-align: center;
-                white-space: pre-line;
-                z-index: 10001;
-                font-weight: bold;
+            #gameCanvas {
+                width: 100vh !important;
+                height: 100vw !important;
+                max-width: none !important;
+                max-height: none !important;
             }
         }
         

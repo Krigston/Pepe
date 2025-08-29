@@ -58,15 +58,25 @@ export class Game {
         const resizeCanvas = () => {
             if (MobileUtils.isMobileDevice()) {
                 // На мобильных устройствах используем полный экран
+                // Для портретной ориентации используем повернутые размеры
+                const isPortrait = window.innerHeight > window.innerWidth;
                 const screenSize = MobileUtils.getScreenSize();
-                this.canvas.width = screenSize.width;
-                this.canvas.height = screenSize.height;
                 
-                // Убираем стандартные размеры
+                if (isPortrait) {
+                    // В портретном режиме используем размеры "как будто" горизонтальные
+                    this.canvas.width = screenSize.height;
+                    this.canvas.height = screenSize.width;
+                    console.log(`Mobile canvas (portrait mode) resized to: ${screenSize.height}x${screenSize.width}`);
+                } else {
+                    // В горизонтальном режиме используем обычные размеры
+                    this.canvas.width = screenSize.width;
+                    this.canvas.height = screenSize.height;
+                    console.log(`Mobile canvas (landscape mode) resized to: ${screenSize.width}x${screenSize.height}`);
+                }
+                
+                // CSS размеры всегда полный экран
                 this.canvas.style.width = '100vw';
                 this.canvas.style.height = '100vh';
-                
-                console.log(`Mobile canvas resized to: ${screenSize.width}x${screenSize.height}`);
             } else {
                 // На десктопе используем стандартные размеры
                 this.canvas.width = 800;
@@ -90,7 +100,7 @@ export class Game {
         });
         
         window.addEventListener('orientationchange', () => {
-            setTimeout(resizeCanvas, 200); // Больше времени для смены ориентации
+            setTimeout(resizeCanvas, 300); // Больше времени для смены ориентации
         });
     }
 

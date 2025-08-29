@@ -110,17 +110,8 @@ class Main {
         if (TelegramWebApp.isTelegramWebApp()) {
             console.log('📱 Запуск в Telegram - используем WebApp API');
             
-            const success = await TelegramWebApp.requestFullscreenLandscape();
-            console.log('📱 Telegram API результат:', success);
-            
-            // Настраиваем постоянный контроль ориентации
-            TelegramWebApp.setupOrientationControl();
-            
-            // Применяем оптимизации для Telegram
-            this.applyTelegramCSSFix();
-            
-            // Добавляем обработчик для пользовательского взаимодействия
-            this.setupUserInteractionHandler();
+            // Простая инициализация с блокировкой ориентации
+            await TelegramWebApp.requestFullscreenLandscape();
             
             document.body.classList.add('landscape-ready');
             
@@ -148,42 +139,7 @@ class Main {
         console.log('🎯 Адаптация ориентации настроена');
     }
     
-    private applyTelegramCSSFix(): void {
-        console.log('🔧 Применяем оптимизации для Telegram');
-        
-        // Добавляем класс для Telegram оптимизаций
-        document.body.classList.add('telegram-optimized');
-        
-        // Принудительно скрываем адресную строку
-        if (window.scrollTo) {
-            window.scrollTo(0, 1);
-        }
-        
-        console.log('✅ Telegram оптимизации применены');
-    }
 
-    private setupUserInteractionHandler(): void {
-        const handleFirstInteraction = async () => {
-            console.log('👆 Пользовательское взаимодействие - активируем блокировку ориентации');
-            
-            // Вызываем блокировку ориентации при первом взаимодействии
-            if (TelegramWebApp.isTelegramWebApp()) {
-                await TelegramWebApp.lockScreenOrientation();
-            }
-            
-            // Удаляем обработчики после первого взаимодействия
-            document.removeEventListener('touchstart', handleFirstInteraction);
-            document.removeEventListener('click', handleFirstInteraction);
-            document.removeEventListener('keydown', handleFirstInteraction);
-        };
-
-        // Добавляем обработчики различных типов взаимодействия
-        document.addEventListener('touchstart', handleFirstInteraction, { once: true });
-        document.addEventListener('click', handleFirstInteraction, { once: true });
-        document.addEventListener('keydown', handleFirstInteraction, { once: true });
-        
-        console.log('🎯 Обработчики пользовательского взаимодействия настроены');
-    }
     
     private showRotateMessage(): void {
         const message = document.createElement('div');

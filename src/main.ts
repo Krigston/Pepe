@@ -48,30 +48,52 @@ class Main {
     }
     
     private setupOrientationLock(): void {
-        // Блокируем ориентацию при первом взаимодействии пользователя
-        const lockOrientation = async () => {
+        // Пытаемся заблокировать ориентацию немедленно при загрузке
+        const tryLockOrientation = async () => {
             const success = await MobileUtils.lockToLandscape();
             if (success) {
-                console.log('🎯 Автоповорот активирован - игра заблокирована в горизонтальном режиме!');
-                // Убираем обработчики после успешной блокировки
-                document.removeEventListener('touchstart', lockOrientation);
-                document.removeEventListener('click', lockOrientation);
-            } else {
-                console.log('⚠️ Не удалось заблокировать ориентацию - используйте поворот устройства вручную');
+                console.log('🚀 Автоповорот активирован автоматически!');
+                return true;
             }
+            return false;
         };
         
-        // Ждем первого взаимодействия пользователя для блокировки ориентации
-        document.addEventListener('touchstart', lockOrientation, { once: true });
-        document.addEventListener('click', lockOrientation, { once: true });
+        // Множественные попытки блокировки без участия пользователя
+        const attemptLock = async () => {
+            // Попытка 1: Сразу при загрузке
+            let success = await tryLockOrientation();
+            if (success) return;
+            
+            // Попытка 2: После небольшой задержки
+            setTimeout(async () => {
+                success = await tryLockOrientation();
+                if (success) return;
+                
+                // Попытка 3: При фокусе на window
+                const onFocus = async () => {
+                    const focused = await tryLockOrientation();
+                    if (focused) {
+                        window.removeEventListener('focus', onFocus);
+                    }
+                };
+                window.addEventListener('focus', onFocus);
+                
+                // Попытка 4: При visibility change
+                const onVisibilityChange = async () => {
+                    if (!document.hidden) {
+                        const visible = await tryLockOrientation();
+                        if (visible) {
+                            document.removeEventListener('visibilitychange', onVisibilityChange);
+                        }
+                    }
+                };
+                document.addEventListener('visibilitychange', onVisibilityChange);
+                
+                console.log('📱 Автоповорот будет активирован при возможности');
+            }, 500);
+        };
         
-        // Также пытаемся заблокировать сразу (может не сработать без пользовательского жеста)
-        setTimeout(async () => {
-            const success = await MobileUtils.lockToLandscape();
-            if (success) {
-                console.log('🚀 Ориентация заблокирована автоматически!');
-            }
-        }, 1000);
+        attemptLock();
     }
     
 

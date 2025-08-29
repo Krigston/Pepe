@@ -57,16 +57,25 @@ export class Game {
     private setupResponsiveCanvas(): void {
         const resizeCanvas = () => {
             if (MobileUtils.isMobileDevice()) {
-                // На мобильных устройствах используем полный экран
+                // На мобильных устройствах адаптируем под экран
                 const screenSize = MobileUtils.getScreenSize();
-                this.canvas.width = screenSize.width;
-                this.canvas.height = screenSize.height;
+                const isPortrait = window.innerHeight > window.innerWidth;
+                
+                if (isPortrait) {
+                    // В портретном режиме поворачиваем размеры для горизонтального геймплея
+                    this.canvas.width = screenSize.height;
+                    this.canvas.height = screenSize.width;
+                    console.log(`Mobile canvas (rotated): ${screenSize.height}x${screenSize.width}`);
+                } else {
+                    // В ландшафтном режиме используем обычные размеры
+                    this.canvas.width = screenSize.width;
+                    this.canvas.height = screenSize.height;
+                    console.log(`Mobile canvas (landscape): ${screenSize.width}x${screenSize.height}`);
+                }
                 
                 // CSS размеры всегда полный экран
                 this.canvas.style.width = '100vw';
                 this.canvas.style.height = '100vh';
-                
-                console.log(`Mobile canvas resized to: ${screenSize.width}x${screenSize.height}`);
             } else {
                 // На десктопе используем стандартные размеры
                 this.canvas.width = 800;

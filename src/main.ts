@@ -24,6 +24,9 @@ class Main {
         if (MobileUtils.isMobileDevice()) {
             console.log('Мобильное устройство обнаружено');
             
+            // Принудительно блокируем горизонтальную ориентацию
+            MobileUtils.lockToLandscape();
+            
             // Отключаем зум
             this.disableMobileZoom();
             

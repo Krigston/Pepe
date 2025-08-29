@@ -110,8 +110,9 @@ class Main {
         if (TelegramWebApp.isTelegramWebApp()) {
             console.log('📱 Запуск в Telegram - используем WebApp API');
             
-            // Простая инициализация с блокировкой ориентации
+            // Простая инициализация для мобильной игры
             await TelegramWebApp.requestFullscreenLandscape();
+            TelegramWebApp.ensureLandscapeMode();
             
             document.body.classList.add('landscape-ready');
             
@@ -216,11 +217,8 @@ class Main {
 
         if (startBtn) {
             startBtn.addEventListener('click', async () => {
-                // Блокируем ориентацию при нажатии кнопки (требует пользовательского взаимодействия)
-                if (TelegramWebApp.isTelegramWebApp()) {
-                    console.log('🎮 Активируем блокировку ориентации при старте игры');
-                    TelegramWebApp.lockScreenOrientation();
-                }
+                // Адаптируем игру под горизонтальный режим
+                TelegramWebApp.ensureLandscapeMode();
                 
                 this.game.start();
                 if (menu) menu.classList.add('hidden');

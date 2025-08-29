@@ -63,8 +63,8 @@ export class TelegramWebApp {
             console.log('📱 Платформа:', this.tg.platform);
             console.log('📱 Версия Telegram:', this.tg.version);
             
-            // Простая блокировка ориентации через Screen Orientation API
-            this.lockScreenOrientation();
+            // Адаптируем игру под мобильный режим
+            this.ensureLandscapeMode();
 
             // Базовые настройки Telegram
             if (this.tg.expand) {
@@ -84,86 +84,72 @@ export class TelegramWebApp {
         }
     }
 
-    // Полноэкранный режим с принудительной горизонтальной ориентацией
-    static async lockScreenOrientation(): Promise<void> {
-        try {
-            // 1. Пробуем Screen Orientation API
-            if ((screen as any).orientation && (screen as any).orientation.lock) {
-                try {
-                    await (screen as any).orientation.lock('landscape');
-                    console.log('✅ Screen Orientation API: landscape заблокирован');
-                    return;
-                } catch (error) {
-                    console.log('⚠️ Screen Orientation API не сработал:', error);
-                }
-            }
+    // Простая адаптация игры под горизонтальный режим
+    static ensureLandscapeMode(): void {
+        console.log('🎮 Настройка горизонтального режима для мобильной игры');
+        
+        // Убираем все CSS поворота которые ломают игру
+        document.body.classList.remove('force-landscape');
+        const oldStyle = document.getElementById('force-landscape-style');
+        if (oldStyle) oldStyle.remove();
+        
+        // Адаптируем размеры canvas под мобильный горизонтальный режим
+        this.adaptCanvasForMobile();
+        
+        // Показываем предупреждение для портретного режима
+        this.showOrientationHint();
+    }
 
-            // 2. Пробуем полноэкранный режим HTML5
-            const gameContainer = document.getElementById('gameContainer');
-            if (gameContainer && gameContainer.requestFullscreen) {
-                try {
-                    await gameContainer.requestFullscreen();
-                    console.log('✅ HTML5 Fullscreen активирован');
-                    
-                    // После входа в полноэкранный режим пробуем заблокировать ориентацию
-                    setTimeout(async () => {
-                        try {
-                            if ((screen as any).orientation && (screen as any).orientation.lock) {
-                                await (screen as any).orientation.lock('landscape');
-                                console.log('✅ Ориентация заблокирована в полноэкранном режиме');
-                            }
-                        } catch (e) {
-                            console.log('⚠️ Не удалось заблокировать ориентацию в полноэкранном режиме');
-                        }
-                    }, 100);
-                    return;
-                } catch (error) {
-                    console.log('⚠️ HTML5 Fullscreen не сработал:', error);
-                }
-            }
+    static adaptCanvasForMobile(): void {
+        const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
+        if (!canvas) return;
 
-            // 3. Fallback - CSS принудительный поворот
-            console.log('🔄 Применяем CSS fallback для горизонтальной ориентации');
-            this.applyCSSLandscapeForce();
-
-        } catch (error) {
-            console.error('❌ Все методы блокировки ориентации не сработали:', error);
+        const isPortrait = window.innerHeight > window.innerWidth;
+        
+        if (isPortrait) {
+            // В портретном режиме делаем canvas шире но короче
+            canvas.style.width = '100vw';
+            canvas.style.height = '60vh';
+            console.log('📱 Canvas адаптирован под портретный режим');
+        } else {
+            // В горизонтальном режиме используем полный экран
+            canvas.style.width = '100vw';
+            canvas.style.height = '100vh';
+            console.log('📱 Canvas адаптирован под горизонтальный режим');
         }
     }
 
-    // CSS принудительный поворот в горизонтальный режим
-    static applyCSSLandscapeForce(): void {
+    static showOrientationHint(): void {
         const isPortrait = window.innerHeight > window.innerWidth;
-        if (!isPortrait) {
-            console.log('✅ Уже в горизонтальном режиме');
-            return;
-        }
-
-        console.log('🔄 Применяем CSS поворот для горизонтального режима');
         
-        const style = document.createElement('style');
-        style.id = 'force-landscape-style';
-        style.textContent = `
-            body.force-landscape {
-                overflow: hidden;
-            }
-            body.force-landscape #gameContainer {
-                transform: rotate(90deg) translate(0, -100%);
-                transform-origin: top left;
-                width: 100vh;
-                height: 100vw;
+        // Удаляем старое уведомление
+        const oldHint = document.getElementById('orientation-hint');
+        if (oldHint) oldHint.remove();
+        
+        if (isPortrait) {
+            const hint = document.createElement('div');
+            hint.id = 'orientation-hint';
+            hint.style.cssText = `
                 position: fixed;
-                top: 0;
-                left: 0;
-            }
-        `;
-        
-        if (!document.getElementById('force-landscape-style')) {
-            document.head.appendChild(style);
+                top: 10px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(0,0,0,0.8);
+                color: white;
+                padding: 8px 16px;
+                border-radius: 20px;
+                font-size: 12px;
+                z-index: 1000;
+                text-align: center;
+            `;
+            hint.innerHTML = '📱 Поверните устройство для лучшего игрового опыта';
+            document.body.appendChild(hint);
+            
+            // Убираем уведомление через 5 секунд
+            setTimeout(() => {
+                if (hint.parentNode) hint.remove();
+            }, 5000);
         }
-        
-        document.body.classList.add('force-landscape');
-        console.log('✅ CSS принудительный горизонтальный режим применен');
     }
 
     static isFullscreen(): boolean {

@@ -216,36 +216,47 @@ class Main {
         const width = window.innerWidth;
         
         if (height > width) {
-            // Применяем CSS transform для принудительного поворота
+            console.log(`📐 Поворачиваем из ${width}x${height} в горизонтальный режим`);
+            
+            // Применяем РАДИКАЛЬНЫЙ CSS transform для полного поворота
             const style = document.createElement('style');
             style.id = 'force-landscape-transform';
             style.textContent = `
-                body {
-                    width: 100vh !important;
-                    height: 100vw !important;
-                    transform: rotate(90deg) !important;
-                    transform-origin: center center !important;
-                    position: fixed !important;
-                    top: 50% !important;
-                    left: 50% !important;
-                    margin-left: -50vh !important;
-                    margin-top: -50vw !important;
+                html, body {
+                    margin: 0 !important;
+                    padding: 0 !important;
                     overflow: hidden !important;
+                    position: fixed !important;
+                    width: 100% !important;
+                    height: 100% !important;
                 }
                 
                 #gameContainer {
-                    width: 100% !important;
-                    height: 100% !important;
-                    position: relative !important;
+                    position: fixed !important;
+                    top: 0 !important;
+                    left: 0 !important;
+                    width: 100vh !important;
+                    height: 100vw !important;
+                    transform: rotate(90deg) translate(-50%, -50%) !important;
+                    transform-origin: 50vw 50vh !important;
+                    background: #000 !important;
+                    z-index: 1000 !important;
                 }
                 
                 #gameCanvas {
                     width: 100% !important;
                     height: 100% !important;
                     display: block !important;
+                    margin: 0 !important;
+                    padding: 0 !important;
                 }
                 
                 #menu {
+                    display: none !important;
+                }
+                
+                /* Скрываем все остальное */
+                body > *:not(#gameContainer) {
                     display: none !important;
                 }
             `;
@@ -255,7 +266,9 @@ class Main {
             if (oldStyle) oldStyle.remove();
             document.head.appendChild(style);
             
-            console.log('🎨 CSS transform применен для принудительного поворота');
+            console.log('🔥 РАДИКАЛЬНЫЙ CSS поворот применен! Игра должна быть горизонтальной');
+        } else {
+            console.log('✅ Уже в горизонтальном режиме');
         }
     }
 
@@ -268,20 +281,25 @@ class Main {
         
         // Настраиваем canvas под принудительно горизонтальный режим
         if (height > width) {
-            // При повороте высота становится шириной и наоборот
-            canvas.width = height;
-            canvas.height = width;
+            // После CSS поворота высота экрана становится шириной canvas
+            const landscapeWidth = height;
+            const landscapeHeight = width;
+            
+            canvas.width = landscapeWidth;
+            canvas.height = landscapeHeight;
+            
+            console.log(`🎮 Canvas для горизонтального режима: ${canvas.width}x${canvas.height} (было ${width}x${height})`);
         } else {
             canvas.width = width;
             canvas.height = height;
+            console.log(`🎮 Canvas для уже горизонтального: ${canvas.width}x${canvas.height}`);
         }
-        
-        console.log(`🎮 Canvas настроен для горизонтального режима: ${canvas.width}x${canvas.height}`);
         
         // Уведомляем игру об изменении размеров
         setTimeout(() => {
             window.dispatchEvent(new Event('resize'));
-        }, 100);
+            console.log('📡 Событие resize отправлено игре');
+        }, 200);
     }
 
     private setupAdaptiveCanvas(): void {

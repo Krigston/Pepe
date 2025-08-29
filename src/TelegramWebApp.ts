@@ -10,7 +10,7 @@ export class TelegramWebApp {
             console.log('🔍 Telegram версия:', this.tg.version);
             console.log('🔍 Telegram платформа:', this.tg.platform);
             
-            // Расширяем приложение на весь экран
+            // Немедленно расширяем приложение на весь экран
             if (this.tg.expand) {
                 this.tg.expand();
                 console.log('📺 Telegram: expand() вызван');
@@ -21,11 +21,19 @@ export class TelegramWebApp {
                 this.tg.setHeaderColor('#667eea');
             }
             
-            // Пробуем сразу активировать полноэкранный режим и контроль ориентации
+            // Немедленно пробуем полноэкранный режим
+            this.requestFullscreenLandscape();
+            
+            // И дополнительно через небольшую задержку
             setTimeout(() => {
                 this.requestFullscreenLandscape();
                 this.setupOrientationControl();
-            }, 500);
+            }, 100);
+            
+            // И еще раз с большей задержкой для надежности
+            setTimeout(() => {
+                this.requestFullscreenLandscape();
+            }, 1000);
             
             console.log('🎯 Telegram WebApp настроен');
         } else {
@@ -54,35 +62,15 @@ export class TelegramWebApp {
         try {
             console.log('🔍 Доступные методы Telegram:', Object.keys(this.tg));
             console.log('📱 Платформа:', this.tg.platform);
+            console.log('📱 Версия Telegram:', this.tg.version);
             
-            // Проверяем, что это мобильное устройство
-            if (!['ios', 'android'].includes(this.tg.platform)) {
-                console.log('ℹ️ Блокировка ориентации работает только на мобильных устройствах');
-                return false;
+            // 1. Сначала расширяем приложение на весь экран
+            if (this.tg.expand) {
+                this.tg.expand();
+                console.log('📺 Telegram: expand() выполнен');
             }
 
-            // Принудительно блокируем горизонтальную ориентацию
-            if (this.tg.lockOrientation) {
-                try {
-                    // Пробуем разные варианты
-                    this.tg.lockOrientation('landscape-primary');
-                    console.log('🔒 Telegram: Ориентация заблокирована (landscape-primary)');
-                    return true;
-                } catch (error) {
-                    console.log('⚠️ Ошибка lockOrientation landscape-primary:', error);
-                    try {
-                        this.tg.lockOrientation('landscape');
-                        console.log('🔒 Telegram: Ориентация заблокирована (landscape)');
-                        return true;
-                    } catch (error2) {
-                        console.log('⚠️ Ошибка lockOrientation landscape:', error2);
-                    }
-                }
-            } else {
-                console.log('❌ lockOrientation недоступен');
-            }
-
-            // Расширяем приложение на весь экран для лучшего игрового опыта
+            // 2. Пробуем полноэкранный режим
             if (this.tg.requestFullscreen) {
                 try {
                     await this.tg.requestFullscreen();
@@ -92,10 +80,36 @@ export class TelegramWebApp {
                 }
             }
 
-            // Включаем подтверждение закрытия для предотвращения случайного выхода
+            // 3. Устанавливаем viewport для горизонтального режима
+            if (this.tg.setViewportHeight) {
+                try {
+                    this.tg.setViewportHeight(false); // Отключаем автоматическую высоту
+                    console.log('📱 Telegram: setViewportHeight(false)');
+                } catch (error) {
+                    console.log('⚠️ Ошибка setViewportHeight:', error);
+                }
+            }
+
+            // 4. Пробуем блокировку ориентации (если доступна)
+            if (this.tg.lockOrientation && ['ios', 'android'].includes(this.tg.platform)) {
+                try {
+                    this.tg.lockOrientation('landscape-primary');
+                    console.log('🔒 Telegram: Ориентация заблокирована (landscape-primary)');
+                } catch (error) {
+                    console.log('⚠️ Ошибка lockOrientation:', error);
+                }
+            }
+
+            // 5. Включаем подтверждение закрытия
             if (this.tg.enableClosingConfirmation) {
                 this.tg.enableClosingConfirmation();
                 console.log('✅ Telegram: Включено подтверждение закрытия');
+            }
+
+            // 6. Устанавливаем цвет фона для полноэкранного режима
+            if (this.tg.setBackgroundColor) {
+                this.tg.setBackgroundColor('#667eea');
+                console.log('🎨 Telegram: Установлен цвет фона');
             }
 
             return true;

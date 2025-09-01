@@ -100,7 +100,10 @@ export class Game {
         this.gameState = 'playing';
         this.audioManager.playBackgroundMusic();
         
-        // Фокусируемся на canvas для получения ввода
+        // Скрываем меню и фокусируемся на canvas
+        const menu = document.getElementById('menu');
+        if (menu) menu.classList.add('hidden');
+        
         const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
         if (canvas) {
             canvas.focus();

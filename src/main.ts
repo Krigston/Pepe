@@ -27,6 +27,7 @@ class Main {
         
         // Сразу инициализируем игру
         this.initializeGame();
+        this.setupOrientationCheck();
         
         this.startGameLoop();
     }
@@ -158,6 +159,7 @@ class Main {
         
         // Запускаем игру
         if (this.game) {
+            document.body.classList.add('game-started');
             this.game.start();
             console.log('✅ Игра запущена напрямую');
         }
@@ -166,157 +168,137 @@ class Main {
 
 
     private setupResponsiveGame(): void {
-        console.log('🎮 Принудительная настройка горизонтальной игры');
+        console.log('🎮 Профессиональная настройка адаптивной игры');
         
-        const isMobile = MobileUtils.isMobileDevice();
+        // Добавляем CSS классы для ориентации
+        this.setupOrientationClasses();
         
-        if (isMobile) {
-            // АВТОМАТИЧЕСКИ делаем игру горизонтальной
-            this.forceLandscapeMode();
-        } else {
-            // На десктопе просто настраиваем canvas
-            this.setupAdaptiveCanvas();
-        }
+        // Настраиваем адаптивный canvas
+        this.setupResponsiveCanvas();
         
-        console.log(`📱 Горизонтальный режим активирован для мобильных`);
+        // Слушаем изменения ориентации
+        this.setupOrientationListener();
+        
+        console.log(`✅ Адаптивная игра настроена`);
     }
 
-    private forceLandscapeMode(): void {
-        console.log('🔄 ПРИНУДИТЕЛЬНЫЙ поворот в горизонтальный режим');
+    private setupOrientationClasses(): void {
+        const updateOrientation = () => {
+            const isLandscape = window.innerWidth > window.innerHeight;
+            document.body.classList.toggle('landscape', isLandscape);
+            document.body.classList.toggle('portrait', !isLandscape);
+            console.log(`📱 Ориентация: ${isLandscape ? 'landscape' : 'portrait'}`);
+        };
         
-        // 1. Настраиваем viewport для горизонтального отображения
-        this.setupLandscapeViewport();
-        
-        // 2. Применяем CSS transform для поворота интерфейса
-        this.applyLandscapeTransform();
-        
-        // 3. Настраиваем canvas под горизонтальный режим
-        this.setupLandscapeCanvas();
-        
-        console.log('✅ Игра принудительно переведена в горизонтальный режим');
+        updateOrientation();
+        window.addEventListener('orientationchange', updateOrientation);
+        window.addEventListener('resize', updateOrientation);
     }
 
-    private setupLandscapeViewport(): void {
-        const viewport = document.querySelector('meta[name="viewport"]') as HTMLMetaElement;
-        if (viewport) {
-            // Эмулируем горизонтальный режим через viewport
-            const height = window.innerHeight;
-            const width = window.innerWidth;
-            
-            if (height > width) {
-                // Если portrait - меняем местами размеры в viewport
-                viewport.content = `width=${height}, height=${width}, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover`;
-                console.log(`📐 Viewport настроен: ${height}x${width} (принудительно горизонтально)`);
-            }
-        }
-    }
-
-    private applyLandscapeTransform(): void {
-        const height = window.innerHeight;
-        const width = window.innerWidth;
-        
-        if (height > width) {
-            console.log(`📐 Поворачиваем из ${width}x${height} в горизонтальный режим`);
-            
-            // Применяем РАДИКАЛЬНЫЙ CSS transform для полного поворота
-            const style = document.createElement('style');
-            style.id = 'force-landscape-transform';
-            style.textContent = `
-                html, body {
-                    margin: 0 !important;
-                    padding: 0 !important;
-                    overflow: hidden !important;
-                    position: fixed !important;
-                    width: 100% !important;
-                    height: 100% !important;
-                }
-                
-                #gameContainer {
-                    position: fixed !important;
-                    top: 0 !important;
-                    left: 0 !important;
-                    width: 100vh !important;
-                    height: 100vw !important;
-                    transform: rotate(90deg) translate(-50%, -50%) !important;
-                    transform-origin: 50vw 50vh !important;
-                    background: #000 !important;
-                    z-index: 1000 !important;
-                }
-                
-                #gameCanvas {
-                    width: 100% !important;
-                    height: 100% !important;
-                    display: block !important;
-                    margin: 0 !important;
-                    padding: 0 !important;
-                }
-                
-                #menu {
-                    display: none !important;
-                }
-                
-                /* Скрываем все остальное */
-                body > *:not(#gameContainer) {
-                    display: none !important;
-                }
-            `;
-            
-            // Удаляем старые стили и добавляем новые
-            const oldStyle = document.getElementById('force-landscape-transform');
-            if (oldStyle) oldStyle.remove();
-            document.head.appendChild(style);
-            
-            console.log('🔥 РАДИКАЛЬНЫЙ CSS поворот применен! Игра должна быть горизонтальной');
-        } else {
-            console.log('✅ Уже в горизонтальном режиме');
-        }
-    }
-
-    private setupLandscapeCanvas(): void {
+    private setupResponsiveCanvas(): void {
         const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
         if (!canvas) return;
         
-        const height = window.innerHeight;
-        const width = window.innerWidth;
-        
-        // Настраиваем canvas под принудительно горизонтальный режим
-        if (height > width) {
-            // После CSS поворота высота экрана становится шириной canvas
-            const landscapeWidth = height;
-            const landscapeHeight = width;
+        const updateCanvas = () => {
+            const container = document.getElementById('gameContainer');
+            if (!container) return;
             
-            canvas.width = landscapeWidth;
-            canvas.height = landscapeHeight;
+            const containerWidth = container.clientWidth;
+            const containerHeight = container.clientHeight;
             
-            console.log(`🎮 Canvas для горизонтального режима: ${canvas.width}x${canvas.height} (было ${width}x${height})`);
-        } else {
-            canvas.width = width;
-            canvas.height = height;
-            console.log(`🎮 Canvas для уже горизонтального: ${canvas.width}x${canvas.height}`);
-        }
-        
-        // Уведомляем игру об изменении размеров
-        setTimeout(() => {
+            // Адаптируем canvas под контейнер
+            canvas.width = containerWidth;
+            canvas.height = containerHeight;
+            
+            console.log(`🎮 Canvas обновлен: ${canvas.width}x${canvas.height}`);
+            
+            // Уведомляем игру
             window.dispatchEvent(new Event('resize'));
-            console.log('📡 Событие resize отправлено игре');
-        }, 200);
+        };
+        
+        updateCanvas();
+        window.addEventListener('resize', updateCanvas);
+        window.addEventListener('orientationchange', () => {
+            setTimeout(updateCanvas, 100);
+        });
     }
 
-    private setupAdaptiveCanvas(): void {
-        const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
-        if (!canvas) return;
+    private setupOrientationListener(): void {
+        // Добавляем CSS стили для адаптивного дизайна
+        const style = document.createElement('style');
+        style.id = 'responsive-game-styles';
+        style.textContent = `
+            /* Базовые стили */
+            body {
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+                font-family: Arial, sans-serif;
+            }
+            
+            #gameContainer {
+                position: relative;
+                width: 100vw;
+                height: 100vh;
+                background: #000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            #gameCanvas {
+                max-width: 100%;
+                max-height: 100%;
+                object-fit: contain;
+                display: block;
+            }
+            
+            /* Стили для портретной ориентации */
+            body.portrait #gameContainer {
+                flex-direction: column;
+            }
+            
+            body.portrait #gameCanvas {
+                width: 100vw;
+                height: 60vh; /* Оставляем место для UI */
+            }
+            
+            /* Стили для горизонтальной ориентации */
+            body.landscape #gameCanvas {
+                width: 100vw;
+                height: 100vh;
+            }
+            
+            /* Скрываем меню при запуске игры */
+            .game-started #menu {
+                display: none;
+            }
+            
+            @media screen and (orientation: landscape) {
+                /* Оптимизация для горизонтальной ориентации */
+                #gameCanvas {
+                    width: 100vw !important;
+                    height: 100vh !important;
+                }
+            }
+            
+            @media screen and (orientation: portrait) {
+                /* Оптимизация для портретной ориентации */
+                #gameCanvas {
+                    width: 100vw !important;
+                    height: 60vh !important;
+                }
+            }
+        `;
         
-        // Для десктопа - обычные размеры
-        canvas.style.width = '100vw';
-        canvas.style.height = '100vh';
-        canvas.style.objectFit = 'contain';
+        const oldStyle = document.getElementById('responsive-game-styles');
+        if (oldStyle) oldStyle.remove();
+        document.head.appendChild(style);
         
-        const rect = canvas.getBoundingClientRect();
-        canvas.width = rect.width;
-        canvas.height = rect.height;
-        
-        console.log(`🖥️ Desktop canvas: ${canvas.width}x${canvas.height}`);
+        console.log('🎨 Адаптивные CSS стили применены');
     }
+
+
 
 
     
@@ -450,6 +432,54 @@ class Main {
                 });
             }
         }
+    }
+
+    private setupOrientationCheck(): void {
+        if (!MobileUtils.isMobileDevice()) return;
+        
+        const createOrientationHint = () => {
+            const hint = document.createElement('div');
+            hint.id = 'orientationHint';
+            hint.className = 'rotate-message';
+            hint.innerHTML = `
+                <div class="rotate-content">
+                    <div class="rotate-icon">📱➡️</div>
+                    <h2>Поверните устройство</h2>
+                    <p>Для комфортной игры рекомендуется горизонтальная ориентация</p>
+                </div>
+            `;
+            document.body.appendChild(hint);
+        };
+        
+        const checkOrientation = () => {
+            const hint = document.getElementById('orientationHint');
+            
+            if (MobileUtils.isLandscape()) {
+                // Горизонтальная - скрываем hint и автозапускаем игру
+                if (hint) hint.remove();
+                this.autoStartGame();
+            } else {
+                // Вертикальная - показываем hint
+                if (!hint) createOrientationHint();
+            }
+        };
+        
+        // Проверяем сразу
+        checkOrientation();
+        
+        // Слушаем изменения ориентации
+        window.addEventListener('orientationchange', () => {
+            setTimeout(checkOrientation, 300);
+        });
+        
+        window.addEventListener('resize', checkOrientation);
+    }
+    
+    private autoStartGame(): void {
+        // Автоматически запускаем игру без модалки
+        setTimeout(() => {
+            this.game.start();
+        }, 100);
     }
 
     private startGameLoop(): void {
